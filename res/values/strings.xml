@@ -2,14 +2,18 @@
 <resources>
 
     <string name="app_name">Simple Office Alarms</string>
+    
+    <string name="action_settings">Settings</string>
+    
     <string name="settings_title">Impostazioni</string>
     
     <string name="pd_dayset_title">Orari settimanali</string>
     <string name="pd_dayset_summ">Imposta gli orari per giorno della settimana</string>
     
-    <string name="hello_world">Hello world!</string>
-    <string name="action_settings">Settings</string>
+    <string name="empty_text"></string>
+    <string name="text_hours">ore</string>
     
     <string name="test_day">mercoledì</string>
+    <string name="hello_world">Hello world!</string>
 
 </resources>

@@ -58,7 +58,7 @@ public class OASession implements OnSharedPreferenceChangeListener {
 	public void setDaysets(int[] daysets) {
 		SharedPreferences.Editor editor = prefs.edit();
 		for (int i = 0; i < daysets.length; i++)
-			editor.putInt("dayset" + Integer.toString(i), daysets[i]);
+			editor.putInt("dayset" + Integer.toString(i + 2), daysets[i]);
 		editor.commit();
 	}
 	

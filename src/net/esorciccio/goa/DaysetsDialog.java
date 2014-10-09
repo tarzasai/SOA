@@ -1,5 +1,6 @@
-package net.esorciccio.wta;
+package net.esorciccio.goa;
 
+import net.esorciccio.wta.R;
 import android.content.Context;
 import android.preference.DialogPreference;
 import android.util.AttributeSet;
@@ -32,6 +33,6 @@ public class DaysetsDialog extends DialogPreference {
 		super.onDialogClosed(positiveResult);
 		
 		if (positiveResult)
-			session.setDaysets(adapter.getDaysets());
+			session.setWeekHours(adapter.getDaysets());
 	}
 }

@@ -1,5 +1,6 @@
-package net.esorciccio.wta;
+package net.esorciccio.goa;
 
+import net.esorciccio.wta.R;
 import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -29,7 +30,7 @@ public class DaysetAdapter extends BaseAdapter {
 			new Integer[] {0, 4, 5, 6, 7, 8});
 		hours.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 		
-		daysets = session.getDaysets();
+		daysets = session.getWeekHours();
 	}
 	
 	@Override
@@ -86,7 +87,7 @@ public class DaysetAdapter extends BaseAdapter {
 		}
 		vh.spi.setTag(Integer.valueOf(position));
 		vh.spi.setSelection(hours.getPosition(daysets[position]));
-		vh.txt.setText(session.getDay(position + 2));
+		vh.txt.setText(session.getDayName(position + 2));
 		return view;
 	}
 	

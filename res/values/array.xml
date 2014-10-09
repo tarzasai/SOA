@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<resources>
+    
+    <string-array name="pk_listen_values">
+        <item>0</item>
+        <item>1</item>
+        <item>2</item>
+        <item>3</item>
+    </string-array>
+    
+    <string-array name="pk_listen_names">
+        <item>Nothing (require user action)</item>
+        <item>NFC tags only</item>
+        <item>WiFi hotspots only</item>
+        <item>NFC tags and WiFi hotspots</item>
+    </string-array>
+    
+</resources>

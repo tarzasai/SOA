@@ -1,4 +1,4 @@
-package net.esorciccio.wta;
+package net.esorciccio.goa;
 
 import android.app.IntentService;
 import android.content.Intent;

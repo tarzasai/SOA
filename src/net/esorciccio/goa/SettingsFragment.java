@@ -1,5 +1,6 @@
-package net.esorciccio.wta;
+package net.esorciccio.goa;
 
+import net.esorciccio.wta.R;
 import android.os.Bundle;
 import android.preference.PreferenceFragment;
 

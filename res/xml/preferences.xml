@@ -1,9 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" >
     
-    <net.esorciccio.wta.DaysetsDialog
+    <net.esorciccio.goa.DaysetsDialog
         android.dialogIcon="@android:drawable/ic_dialog_info"
         android:summary="@string/pd_dayset_summ"
         android:title="@string/pd_dayset_title" />
+    
+    <net.esorciccio.goa.WifisetDialog
+        android.dialogIcon="@android:drawable/ic_dialog_info"
+        android:summary="@string/pd_wifiset_summ"
+        android:title="@string/pd_wifiset_title" />
     
 </PreferenceScreen>

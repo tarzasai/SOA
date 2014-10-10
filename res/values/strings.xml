@@ -11,9 +11,18 @@
     <string name="pd_dayset_summ">How many work hours per weekday</string>
     <string name="pd_wifiset_title">Office WiFi</string>
     <string name="pd_wifiset_summ">WiFi hotspots to trigger events</string>
+    <string name="pc_lunch_title">Lunch alerts</string>
+    <string name="pk_lunch_title">Lunch time alerts</string>
+    <string name="pk_lunch_summ">Alerts at lunch time begin-end</string>
+    <string name="pk_pstart_title">Lunch time begin</string>
+    <string name="pk_pstart_summ">Lunch time begin hour</string>
+    <string name="pk_pstop_title">Lunch time end</string>
+    <string name="pk_pstop_summ">Lunch time end hour</string>
     
     <string name="empty_text"></string>
     <string name="text_hours">ore</string>
+    <string name="dlg_btn_ok">OK</string>
+    <string name="dlg_btn_cancel">Cancel</string>
     <string name="msg_wifi_off">WiFi is currently disabled</string>
     <string name="msg_wifi_scan">Scanning for WiFi networks</string>
     

@@ -2,13 +2,33 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" >
     
     <net.esorciccio.goa.DaysetsDialog
-        android.dialogIcon="@android:drawable/ic_dialog_info"
         android:summary="@string/pd_dayset_summ"
         android:title="@string/pd_dayset_title" />
     
     <net.esorciccio.goa.WifisetDialog
-        android.dialogIcon="@android:drawable/ic_dialog_info"
         android:summary="@string/pd_wifiset_summ"
         android:title="@string/pd_wifiset_title" />
+    
+    <PreferenceCategory
+        android:key="pc_lunch"
+        android:title="@string/pc_lunch_title" >
+        
+        <CheckBoxPreference
+            android:key="pk_lunch"
+            android:defaultValue="true"
+            android:summary="@string/pk_lunch_summ"
+            android:title="@string/pk_lunch_title" />
+	    
+	    <net.esorciccio.goa.TimePreference
+	        android:key="pk_pstart"
+	        android:title="@string/pk_pstart_title"
+	        android:defaultValue="13:30" />
+	    
+	    <net.esorciccio.goa.TimePreference
+	        android:key="pk_pstop"
+	        android:title="@string/pk_pstop_title"
+	        android:defaultValue="14:30" />
+        
+    </PreferenceCategory>
     
 </PreferenceScreen>

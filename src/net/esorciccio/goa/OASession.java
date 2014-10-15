@@ -1,18 +1,29 @@
 package net.esorciccio.goa;
 
+import java.text.DateFormat;
 import java.text.DateFormatSymbols;
 import java.util.Calendar;
 import java.util.HashSet;
 import java.util.Locale;
 import java.util.Set;
 
+import android.app.AlarmManager;
+import android.app.PendingIntent;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.preference.PreferenceManager;
 import android.text.format.DateUtils;
+import android.util.Log;
 
 public class OASession implements OnSharedPreferenceChangeListener {
+	
+	static class AC {
+		public static final String LEAVE = "net.esorciccio.goa.OASession.AC.LEAVE";
+		public static final String BLUNC = "net.esorciccio.goa.OASession.AC.BLUNC";
+		public static final String ELUNC = "net.esorciccio.goa.OASession.AC.ELUNC";
+	}
 	
 	static class PK {
 		public static final String HOURS = "pk_hours";
@@ -20,10 +31,11 @@ public class OASession implements OnSharedPreferenceChangeListener {
 		public static final String ARRIV = "pk_arrival";
 		public static final String LEAVE = "pk_leaving";
 		public static final String LUNCH = "pk_lunch";
-		public static final String LUNCB = "pk_lstart";
-		public static final String LUNCE = "pk_lstop";
+		public static final String BLUNC = "pk_lstart";
+		public static final String ELUNC = "pk_lstop";
 	}
 	
+	private static Context appContext;
 	private static OASession singleton;
 	
 	public static OASession getInstance(Context context) {
@@ -36,7 +48,9 @@ public class OASession implements OnSharedPreferenceChangeListener {
 	private final String[] daynames;
 	
 	public OASession(Context context) {
-		prefs = PreferenceManager.getDefaultSharedPreferences(context.getApplicationContext());
+		appContext = context.getApplicationContext();
+		
+		prefs = PreferenceManager.getDefaultSharedPreferences(appContext);
 		prefs.registerOnSharedPreferenceChangeListener(this);
 		
 		daynames = new DateFormatSymbols(Locale.getDefault()).getWeekdays();
@@ -68,6 +82,7 @@ public class OASession implements OnSharedPreferenceChangeListener {
 	}
 	
 	public void setWeekHours(int[] daysets) {
+		Log.v(getClass().getSimpleName(), "setWeekHours");
 		SharedPreferences.Editor editor = prefs.edit();
 		for (int i = 0; i < daysets.length; i++)
 			editor.putInt(PK.HOURS + Integer.toString(i + 2), daysets[i]);
@@ -79,6 +94,7 @@ public class OASession implements OnSharedPreferenceChangeListener {
 	}
 	
 	public void setWifiSet(Set<String> ssids) {
+		Log.v(getClass().getSimpleName(), "setWifiSet");
 		SharedPreferences.Editor editor = prefs.edit();
 		editor.putStringSet(PK.WIFIS, ssids);
 		editor.commit();
@@ -92,22 +108,29 @@ public class OASession implements OnSharedPreferenceChangeListener {
 	}
 	
 	public void setArrival(long value) {
+		Log.v(getClass().getSimpleName(), "setArrival");
 		SharedPreferences.Editor editor = prefs.edit();
 		editor.putLong(PK.ARRIV, value);
 		editor.commit();
 	}
 	
-	public long getLeaving() {
+	public long getLeft() {
 		long res = getPrefs().getLong(PK.LEAVE, 0);
 		if (res > 0 && !DateUtils.isToday(res))
 			res = 0;
 		return res;
 	}
 	
-	public void setLeaving(long value) {
+	public void setLeft(long value) {
+		Log.v(getClass().getSimpleName(), "setLeaving");
 		SharedPreferences.Editor editor = prefs.edit();
 		editor.putLong(PK.LEAVE, value);
 		editor.commit();
+	}
+	
+	public long getLeaving() {
+		long t = getArrival();
+		return t <= 0 ? 0 : t + (1000 * 60 * 60 * getDayHours());
 	}
 	
 	public boolean getLunchAlerts() {
@@ -115,8 +138,9 @@ public class OASession implements OnSharedPreferenceChangeListener {
 	}
 	
 	public long getLunchBegin() {
-		String[] tp = getPrefs().getString(PK.LUNCB, "13:00").split(":");
+		String[] tp = getPrefs().getString(PK.BLUNC, "13:00").split(":");
 		Calendar cal = Calendar.getInstance();
+		cal.setTimeInMillis(System.currentTimeMillis());
 		cal.set(Calendar.HOUR_OF_DAY, Integer.parseInt(tp[0]));
 		cal.set(Calendar.MINUTE, Integer.parseInt(tp[1]));
 		cal.set(Calendar.SECOND, 0);
@@ -125,8 +149,9 @@ public class OASession implements OnSharedPreferenceChangeListener {
 	}
 	
 	public long getLunchEnd() {
-		String[] tp = getPrefs().getString(PK.LUNCE, "14:00").split(":");
+		String[] tp = getPrefs().getString(PK.ELUNC, "14:00").split(":");
 		Calendar cal = Calendar.getInstance();
+		cal.setTimeInMillis(System.currentTimeMillis());
 		cal.set(Calendar.HOUR_OF_DAY, Integer.parseInt(tp[0]));
 		cal.set(Calendar.MINUTE, Integer.parseInt(tp[1]));
 		cal.set(Calendar.SECOND, 0);
@@ -134,8 +159,60 @@ public class OASession implements OnSharedPreferenceChangeListener {
 		return cal.getTimeInMillis();
 	}
 	
+	private static PendingIntent mkPI(String action) {
+		return PendingIntent.getBroadcast(appContext, 0, new Intent(appContext, OAReceiver.class).setAction(action),
+			PendingIntent.FLAG_UPDATE_CURRENT);
+	}
+	
+	public void resetAlarms() {
+		Log.v(getClass().getSimpleName(), "resetAlarms");
+		AlarmManager am = (AlarmManager) appContext.getSystemService(Context.ALARM_SERVICE);
+		
+		PendingIntent li = mkPI(AC.LEAVE);
+		PendingIntent bi = mkPI(AC.BLUNC);
+		PendingIntent ei = mkPI(AC.ELUNC);
+		
+		long at = getArrival();
+		long lt = getLeaving();
+		long bt = getLunchBegin();
+		long et = getLunchEnd();
+		
+		if (!(at > 0 && lt > System.currentTimeMillis())) {
+			am.cancel(li);
+			am.cancel(bi);
+			am.cancel(ei);
+			return;
+		} else {
+			am.setRepeating(AlarmManager.RTC_WAKEUP, lt, AlarmManager.INTERVAL_HALF_HOUR, li);
+			Log.v(getClass().getSimpleName(), "leaving alarm set to " + DateUtils.formatSameDayTime(lt,
+				System.currentTimeMillis(), DateFormat.SHORT, DateFormat.MEDIUM).toString());
+		}
+		
+		if (!getPrefs().getBoolean(PK.LUNCH, true)) {
+			am.cancel(bi);
+			am.cancel(ei);
+			return;
+		}
+		
+		if (bt < System.currentTimeMillis())
+			am.cancel(bi);
+		else {
+			am.set(AlarmManager.RTC_WAKEUP, bt, bi);
+			Log.v(getClass().getSimpleName(), "lunch begin alarm set to " + DateUtils.formatSameDayTime(
+				bt, System.currentTimeMillis(), DateFormat.SHORT, DateFormat.MEDIUM).toString());
+		}
+		
+		if (et < System.currentTimeMillis())
+			am.cancel(ei);
+		else {
+			am.set(AlarmManager.RTC_WAKEUP, et, ei);
+			Log.v(getClass().getSimpleName(), "lunch end alarm set to " + DateUtils.formatSameDayTime(
+				et, System.currentTimeMillis(), DateFormat.SHORT, DateFormat.MEDIUM).toString());
+		}
+	}
+	
 	@Override
 	public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
-		// TODO Auto-generated method stub
+		resetAlarms();
 	}
 }

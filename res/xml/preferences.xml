@@ -20,13 +20,13 @@
             android:title="@string/pk_lunch_title" />
 	    
 	    <net.esorciccio.goa.TimePreference
-	        android:key="pk_pstart"
-	        android:title="@string/pk_pstart_title"
+	        android:key="pk_lstart"
+	        android:title="@string/pk_lstart_title"
 	        android:defaultValue="13:30" />
 	    
 	    <net.esorciccio.goa.TimePreference
-	        android:key="pk_pstop"
-	        android:title="@string/pk_pstop_title"
+	        android:key="pk_lstop"
+	        android:title="@string/pk_lstop_title"
 	        android:defaultValue="14:30" />
         
     </PreferenceCategory>

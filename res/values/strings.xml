@@ -14,19 +14,27 @@
     <string name="pc_lunch_title">Lunch alerts</string>
     <string name="pk_lunch_title">Lunch time alerts</string>
     <string name="pk_lunch_summ">Alerts at lunch time begin-end</string>
-    <string name="pk_pstart_title">Lunch time begin</string>
-    <string name="pk_pstart_summ">Lunch time begin hour</string>
-    <string name="pk_pstop_title">Lunch time end</string>
-    <string name="pk_pstop_summ">Lunch time end hour</string>
+    <string name="pk_lstart_title">Lunch time begin</string>
+    <string name="pk_lstop_title">Lunch time end</string>
     
-    <string name="empty_text"></string>
-    <string name="text_hours">ore</string>
+    <string name="txt_empty"></string>
+    <string name="txt_hours">ore</string>
+    <string name="lbl_arrival">Arrival:</string>
+    <string name="lbl_leaving">Leave at:</string>
+    <string name="lbl_tmpleft">Actual left:</string>
     <string name="dlg_btn_ok">OK</string>
     <string name="dlg_btn_cancel">Cancel</string>
     <string name="msg_wifi_off">WiFi is currently disabled</string>
     <string name="msg_wifi_scan">Scanning for WiFi networks</string>
+    <string name="msg_leave_title">Go home!</string>
+    <string name="msg_leave_text">Time to go home: </string>
+    <string name="msg_blunc_title">Go to lunch!</string>
+    <string name="msg_blunc_text">Lunch time started</string>
+    <string name="msg_elunc_title">Get back to work!</string>
+    <string name="msg_elunc_text">Lunch time ended</string>
     
     <string name="test_day">mercoledì</string>
+    <string name="test_time">12:45</string>
     <string name="test_wifi">Alice3924987293798</string>
     <string name="hello_world">Hello world!</string>
 

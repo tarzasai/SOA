@@ -1,15 +1,23 @@
 package net.esorciccio.goa;
 
-import java.util.Date;
 import java.util.Set;
 
+import net.esorciccio.wta.R;
+import android.app.NotificationManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.net.wifi.ScanResult;
 import android.net.wifi.WifiManager;
+import android.support.v4.app.NotificationCompat;
+import android.text.format.DateUtils;
+import android.util.Log;
 
 public class OAReceiver extends BroadcastReceiver {
+	
+	public static final int NOTIF_LEAVE_ID = 1;
+	public static final int NOTIF_BLUNC_ID = 2;
+	public static final int NOTIF_ELUNC_ID = 3;
 	
 	private OASession session;
 	private WifiManager wifiman;
@@ -21,15 +29,52 @@ public class OAReceiver extends BroadcastReceiver {
 	public void onReceive(Context context, Intent intent) {
 		session = OASession.getInstance(context);
 		
-		if (inOffice(context)) {
+		String act = intent.getAction();
+		Log.v(getClass().getSimpleName(), act);
+		
+		if (act.equals("android.intent.action.BOOT_COMPLETED")) {
 			
-			if (session.getArrival() <= 0)
-				session.setArrival(new Date().getTime());
+			session.resetAlarms();
 			
-		} else if (session.getArrival() > 0) {
+		} else if (act.equals("android.net.wifi.SCAN_RESULTS")) {
 			
-			if (session.getLeaving() <= 0)
-				session.setLeaving(new Date().getTime());
+			if (inOffice(context)) {
+				if (session.getArrival() <= 0)
+					session.setArrival(System.currentTimeMillis());
+				else if (session.getLeft() > 0)
+					session.setLeft(0);
+			} else if (session.getArrival() > 0) {
+				if (session.getLeft() <= 0)
+					session.setLeft(System.currentTimeMillis());
+			}
+			
+		} else if (act.equals(OASession.AC.BLUNC)) {
+			
+			NotificationCompat.Builder ncb = new NotificationCompat.Builder(context).setSmallIcon(
+				R.drawable.ic_launcher).setContentTitle(context.getString(R.string.msg_blunc_title)).setContentText(
+				context.getString(R.string.msg_blunc_text));
+			NotificationManager nmg = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+			nmg.notify(NOTIF_BLUNC_ID, ncb.build());
+			
+		} else if (act.equals(OASession.AC.ELUNC)) {
+			
+			NotificationCompat.Builder ncb = new NotificationCompat.Builder(context).setSmallIcon(
+				R.drawable.ic_launcher).setContentTitle(context.getString(R.string.msg_elunc_title)).setContentText(
+				context.getString(R.string.msg_elunc_text));
+			NotificationManager nmg = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+			nmg.notify(NOTIF_ELUNC_ID, ncb.build());
+			nmg.cancel(NOTIF_BLUNC_ID);
+			
+		} else if (act.equals(OASession.AC.LEAVE)) {
+			
+			NotificationCompat.Builder ncb = new NotificationCompat.Builder(context).setSmallIcon(
+				R.drawable.ic_launcher).setContentTitle(context.getString(R.string.msg_leave_title)).setContentText(
+				context.getString(R.string.msg_leave_text) + DateUtils.getRelativeTimeSpanString(
+				session.getLeaving(), System.currentTimeMillis(), DateUtils.MINUTE_IN_MILLIS).toString());
+			NotificationManager nmg = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+			nmg.notify(NOTIF_LEAVE_ID, ncb.build());
+			nmg.cancel(NOTIF_BLUNC_ID);
+			nmg.cancel(NOTIF_ELUNC_ID);
 			
 		}
 		
@@ -38,7 +83,7 @@ public class OAReceiver extends BroadcastReceiver {
 	private boolean inOffice(Context context) {
 		wifiman = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
 		Set<String> ssids = session.getWifiSet();
-		for (ScanResult sr: wifiman.getScanResults())
+		for (ScanResult sr : wifiman.getScanResults())
 			if (ssids.contains(sr.SSID))
 				return true;
 		return false;

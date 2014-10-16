@@ -21,7 +21,7 @@ public class OAReceiver extends BroadcastReceiver {
 	public static final int NOTIF_ELUNC_ID = 3;
 	
 	private OASession session;
-	private WifiManager wifiman;
+	//private WifiManager wifiman;
 	
 	public OAReceiver() {
 	}
@@ -41,6 +41,18 @@ public class OAReceiver extends BroadcastReceiver {
 			
 		} else if (act.equals("android.net.wifi.SCAN_RESULTS")) {
 			
+			WifiManager wifiman = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
+			Set<String> ssids = session.getWifiSet();
+			boolean res = false;
+			for (ScanResult sr : wifiman.getScanResults())
+				if (ssids.contains(sr.SSID)) {
+					res = true;
+					break;
+				}
+			session.setInOffice(res);
+			
+			/*
+			////////////////////////////////////////////////////////////
 			if (inOffice(context)) {
 				if (session.getArrival() <= 0)
 					session.setArrival(System.currentTimeMillis());
@@ -50,6 +62,8 @@ public class OAReceiver extends BroadcastReceiver {
 				if (session.getLeft() <= 0)
 					session.setLeft(System.currentTimeMillis());
 			}
+			/////////////////////////////////////////////////////////
+			*/
 			
 		} else if (act.equals(OASession.AC.BLUNC)) {
 			
@@ -82,6 +96,7 @@ public class OAReceiver extends BroadcastReceiver {
 		}
 	}
 	
+	/*
 	private boolean inOffice(Context context) {
 		wifiman = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
 		Set<String> ssids = session.getWifiSet();
@@ -90,4 +105,5 @@ public class OAReceiver extends BroadcastReceiver {
 				return true;
 		return false;
 	}
+	*/
 }

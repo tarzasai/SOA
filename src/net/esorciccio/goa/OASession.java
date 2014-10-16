@@ -29,6 +29,7 @@ public class OASession implements OnSharedPreferenceChangeListener {
 		public static final String HOURS = "pk_hours";
 		public static final String WIFIS = "pk_wifis";
 		public static final String ROUND = "pk_round";
+		public static final String THERE = "pk_there";
 		public static final String ARRIV = "pk_arrival";
 		public static final String LEAVE = "pk_leaving";
 		public static final String LUNCH = "pk_lunch";
@@ -98,6 +99,17 @@ public class OASession implements OnSharedPreferenceChangeListener {
 		Log.v(getClass().getSimpleName(), "setWifiSet");
 		SharedPreferences.Editor editor = prefs.edit();
 		editor.putStringSet(PK.WIFIS, ssids);
+		editor.commit();
+	}
+	
+	public boolean getInOffice() {
+		return getPrefs().getBoolean(PK.THERE, false);
+	}
+	
+	public void setInOffice(boolean value) {
+		Log.v(getClass().getSimpleName(), "setInOffice");
+		SharedPreferences.Editor editor = prefs.edit();
+		editor.putBoolean(PK.THERE, value);
 		editor.commit();
 	}
 	

@@ -12,7 +12,7 @@
         android:layout_height="wrap_content"
         android:layout_marginLeft="6dp"
         android:layout_marginRight="6dp"
-        android:layout_marginTop="8dp"
+        android:layout_marginTop="6dp"
         android:contentDescription="@string/txt_empty"
         android:drawableLeft="@drawable/wg_in"
         android:drawablePadding="5dp"
@@ -37,12 +37,20 @@
         android:textColor="@android:color/white" />
 
     <TextView
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_marginLeft="0dp"
+        android:layout_marginRight="0dp"
+        android:layout_marginTop="8dp"
+        android:background="@android:color/darker_gray" />
+
+    <TextView
         android:id="@+id/txt_left"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginLeft="6dp"
         android:layout_marginRight="6dp"
-        android:layout_marginTop="6dp"
+        android:layout_marginTop="4dp"
         android:contentDescription="@string/txt_empty"
         android:drawableLeft="@drawable/rewind"
         android:drawablePadding="5dp"

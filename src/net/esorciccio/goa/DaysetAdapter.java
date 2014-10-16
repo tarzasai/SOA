@@ -1,6 +1,6 @@
 package net.esorciccio.goa;
 
-import net.esorciccio.wta.R;
+import net.esorciccio.goa.R;
 import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;

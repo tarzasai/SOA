@@ -3,7 +3,7 @@ package net.esorciccio.goa;
 import java.util.HashSet;
 import java.util.Set;
 
-import net.esorciccio.wta.R;
+import net.esorciccio.goa.R;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;

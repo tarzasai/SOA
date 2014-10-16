@@ -28,6 +28,7 @@ public class OASession implements OnSharedPreferenceChangeListener {
 	static class PK {
 		public static final String HOURS = "pk_hours";
 		public static final String WIFIS = "pk_wifis";
+		public static final String ROUND = "pk_round";
 		public static final String ARRIV = "pk_arrival";
 		public static final String LEAVE = "pk_leaving";
 		public static final String LUNCH = "pk_lunch";
@@ -104,6 +105,18 @@ public class OASession implements OnSharedPreferenceChangeListener {
 		long res = getPrefs().getLong(PK.ARRIV, 0);
 		if (res > 0 && !DateUtils.isToday(res))
 			res = 0;
+		else {
+			Calendar cal = Calendar.getInstance();
+			cal.setTimeInMillis(res);
+			if (getRoundAt5()) {
+				int m = cal.get(Calendar.MINUTE);
+				m -= m % 5;
+				cal.set(Calendar.MINUTE, m);
+			}
+			cal.set(Calendar.SECOND, 0);
+			cal.set(Calendar.MILLISECOND, 0);
+			res = cal.getTimeInMillis();
+		}
 		return res;
 	}
 	
@@ -129,8 +142,17 @@ public class OASession implements OnSharedPreferenceChangeListener {
 	}
 	
 	public long getLeaving() {
-		long t = getArrival();
-		return t <= 0 ? 0 : t + (1000 * 60 * 60 * getDayHours());
+		long res = getArrival();
+		if (res > 0) {
+			res += (1000 * 60 * 60 * getDayHours());
+			if (getLunchAlerts())
+				res += (getLunchEnd() - getLunchBegin());
+		}
+		return res;
+	}
+	
+	public boolean getRoundAt5() {
+		return getPrefs().getBoolean(PK.ROUND, false);
 	}
 	
 	public boolean getLunchAlerts() {

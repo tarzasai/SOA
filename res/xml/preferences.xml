@@ -9,6 +9,12 @@
         android:summary="@string/pd_wifiset_summ"
         android:title="@string/pd_wifiset_title" />
     
+    <CheckBoxPreference
+        android:key="pk_round"
+        android:defaultValue="false"
+        android:summary="@string/pk_round_summ"
+        android:title="@string/pk_round_title" />
+    
     <PreferenceCategory
         android:key="pc_lunch"
         android:title="@string/pc_lunch_title" >

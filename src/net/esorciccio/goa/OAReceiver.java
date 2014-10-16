@@ -2,11 +2,12 @@ package net.esorciccio.goa;
 
 import java.util.Set;
 
-import net.esorciccio.wta.R;
 import android.app.NotificationManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.media.RingtoneManager;
+import android.net.Uri;
 import android.net.wifi.ScanResult;
 import android.net.wifi.WifiManager;
 import android.support.v4.app.NotificationCompat;
@@ -29,6 +30,8 @@ public class OAReceiver extends BroadcastReceiver {
 	public void onReceive(Context context, Intent intent) {
 		session = OASession.getInstance(context);
 		
+		Uri snd = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+		
 		String act = intent.getAction();
 		Log.v(getClass().getSimpleName(), act);
 		
@@ -50,7 +53,7 @@ public class OAReceiver extends BroadcastReceiver {
 			
 		} else if (act.equals(OASession.AC.BLUNC)) {
 			
-			NotificationCompat.Builder ncb = new NotificationCompat.Builder(context).setSmallIcon(
+			NotificationCompat.Builder ncb = new NotificationCompat.Builder(context).setSound(snd).setSmallIcon(
 				R.drawable.ic_launcher).setContentTitle(context.getString(R.string.msg_blunc_title)).setContentText(
 				context.getString(R.string.msg_blunc_text));
 			NotificationManager nmg = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
@@ -58,7 +61,7 @@ public class OAReceiver extends BroadcastReceiver {
 			
 		} else if (act.equals(OASession.AC.ELUNC)) {
 			
-			NotificationCompat.Builder ncb = new NotificationCompat.Builder(context).setSmallIcon(
+			NotificationCompat.Builder ncb = new NotificationCompat.Builder(context).setSound(snd).setSmallIcon(
 				R.drawable.ic_launcher).setContentTitle(context.getString(R.string.msg_elunc_title)).setContentText(
 				context.getString(R.string.msg_elunc_text));
 			NotificationManager nmg = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
@@ -67,7 +70,7 @@ public class OAReceiver extends BroadcastReceiver {
 			
 		} else if (act.equals(OASession.AC.LEAVE)) {
 			
-			NotificationCompat.Builder ncb = new NotificationCompat.Builder(context).setSmallIcon(
+			NotificationCompat.Builder ncb = new NotificationCompat.Builder(context).setSound(snd).setSmallIcon(
 				R.drawable.ic_launcher).setContentTitle(context.getString(R.string.msg_leave_title)).setContentText(
 				context.getString(R.string.msg_leave_text) + DateUtils.getRelativeTimeSpanString(
 				session.getLeaving(), System.currentTimeMillis(), DateUtils.MINUTE_IN_MILLIS).toString());
@@ -77,7 +80,6 @@ public class OAReceiver extends BroadcastReceiver {
 			nmg.cancel(NOTIF_ELUNC_ID);
 			
 		}
-		
 	}
 	
 	private boolean inOffice(Context context) {

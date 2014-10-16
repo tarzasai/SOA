@@ -3,14 +3,16 @@
 
     <string name="app_name">Simple Office Alarms</string>
     
+    <string name="action_reset">Reset data</string>
     <string name="action_settings">Settings</string>
-    
     <string name="settings_title">Settings</string>
     
     <string name="pd_dayset_title">Week hours</string>
     <string name="pd_dayset_summ">How many work hours per weekday</string>
     <string name="pd_wifiset_title">Office WiFi</string>
     <string name="pd_wifiset_summ">WiFi hotspots to trigger events</string>
+    <string name="pk_round_title">Round at 5</string>
+    <string name="pk_round_summ">Truncate at nearest 5 minutes</string>
     <string name="pc_lunch_title">Lunch alerts</string>
     <string name="pk_lunch_title">Lunch time alerts</string>
     <string name="pk_lunch_summ">Alerts at lunch time begin-end</string>
@@ -35,7 +37,8 @@
     
     <string name="test_day">mercoledì</string>
     <string name="test_time">12:45</string>
+    <string name="test_boh">n/a</string>
     <string name="test_wifi">Alice3924987293798</string>
-    <string name="hello_world">Hello world!</string>
+    <string name="add_widget">Add widget</string>
 
 </resources>

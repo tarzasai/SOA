@@ -1,9 +1,11 @@
 package net.esorciccio.goa;
 
 import java.text.DateFormat;
+import java.util.Calendar;
 
 import net.esorciccio.goa.OASession.PK;
-import net.esorciccio.wta.R;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
@@ -12,7 +14,11 @@ import android.support.v7.app.ActionBarActivity;
 import android.text.format.DateUtils;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.EditText;
+import android.widget.TableRow;
 import android.widget.TextView;
+import android.widget.Toast;
 
 public class MainActivity extends ActionBarActivity implements OnSharedPreferenceChangeListener {
 	
@@ -21,6 +27,7 @@ public class MainActivity extends ActionBarActivity implements OnSharedPreferenc
 	private TextView txtArrival;
 	private TextView txtLeaving;
 	private TextView txtTmpLeft;
+	private TableRow rowTmpLeft;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -33,6 +40,7 @@ public class MainActivity extends ActionBarActivity implements OnSharedPreferenc
 		txtArrival = (TextView) findViewById(R.id.txt_arrival);
 		txtLeaving = (TextView) findViewById(R.id.txt_leave);
 		txtTmpLeft = (TextView) findViewById(R.id.txt_left);
+		rowTmpLeft = (TableRow) findViewById(R.id.row_left);
 	}
 	
 	@Override
@@ -44,14 +52,19 @@ public class MainActivity extends ActionBarActivity implements OnSharedPreferenc
 	protected void onResume() {
 		super.onResume();
 		
+		session.getPrefs().registerOnSharedPreferenceChangeListener(this);
+		
 		txtArrival.setText(DateUtils.formatSameDayTime(session.getArrival(), System.currentTimeMillis(),
 			DateFormat.SHORT, DateFormat.MEDIUM));
 		txtLeaving.setText(DateUtils.formatSameDayTime(session.getLeaving(), System.currentTimeMillis(),
 			DateFormat.SHORT, DateFormat.MEDIUM));
-		txtTmpLeft.setText(DateUtils.formatSameDayTime(session.getLeft(), System.currentTimeMillis(),
-			DateFormat.SHORT, DateFormat.MEDIUM));
-		
-		session.getPrefs().registerOnSharedPreferenceChangeListener(this);
+		if (session.getLeft() <= 0)
+			rowTmpLeft.setVisibility(View.GONE);
+		else {
+			rowTmpLeft.setVisibility(View.VISIBLE);
+			txtTmpLeft.setText(DateUtils.formatSameDayTime(session.getLeft(), System.currentTimeMillis(),
+				DateFormat.SHORT, DateFormat.MEDIUM));
+		}
 	}
 	
 	@Override
@@ -87,6 +100,26 @@ public class MainActivity extends ActionBarActivity implements OnSharedPreferenc
 		if (id == R.id.action_settings) {
 			startActivity(new Intent(this, SettingsActivity.class));
 			return true;
+		}
+		if (id == R.id.action_reset) {
+			final EditText input = new EditText(this);
+			new AlertDialog.Builder(MainActivity.this).setTitle("Reset arrival").setView(
+				input).setPositiveButton(R.string.dlg_btn_ok, new DialogInterface.OnClickListener() {
+					@Override
+					public void onClick(DialogInterface dialog, int whichButton) {
+						try {
+							String[] tp = input.getText().toString().split(":");
+							Calendar cal = Calendar.getInstance();
+							cal.set(Calendar.HOUR_OF_DAY, Integer.parseInt(tp[0]));
+							cal.set(Calendar.MINUTE, Integer.parseInt(tp[1]));
+							cal.set(Calendar.SECOND, 0);
+							cal.set(Calendar.MILLISECOND, 0);
+							session.setArrival(cal.getTimeInMillis());
+						} catch (Exception err) {
+							Toast.makeText(MainActivity.this, err.getMessage(), Toast.LENGTH_SHORT).show();
+						}
+					}
+				}).setCancelable(true).show();
 		}
 		return super.onOptionsItemSelected(item);
 	}

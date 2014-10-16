@@ -4,6 +4,12 @@
     tools:context="net.esorciccio.wta.MainActivity" >
 
     <item
+        android:id="@+id/action_reset"
+        android:orderInCategory="10"
+        android:title="@string/action_reset"
+        app:showAsAction="never"/>
+
+    <item
         android:id="@+id/action_settings"
         android:orderInCategory="100"
         android:title="@string/action_settings"

@@ -221,36 +221,36 @@ public class OASession implements OnSharedPreferenceChangeListener {
 	public void checkAlarms() {
 		Log.v(getClass().getSimpleName(), "resetAlarms");
 		AlarmManager am = (AlarmManager) appContext.getSystemService(Context.ALARM_SERVICE);
-		
 		PendingIntent li = mkPI(AC.LEAVE);
 		PendingIntent bi = mkPI(AC.BLUNC);
 		PendingIntent ei = mkPI(AC.ELUNC);
-		
 		long at = getArrival();
 		long lt = getLeaving();
 		long bt = getLunchBegin();
 		long et = getLunchEnd();
-		
 		if (!(getInOffice() && at > 0 && lt > System.currentTimeMillis())) {
 			am.cancel(li);
+			Log.v(getClass().getSimpleName(), "leaving alarm canceled");
 		} else {
 			am.setRepeating(AlarmManager.RTC_WAKEUP, lt, AlarmManager.INTERVAL_HALF_HOUR, li);
 			Log.v(getClass().getSimpleName(), "leaving alarm set to " + timeString(lt));
 		}
-		
 		if (!(getLunchAlerts() && at > 0 && lt > System.currentTimeMillis())) {
 			am.cancel(bi);
 			am.cancel(ei);
+			Log.v(getClass().getSimpleName(), "lunch alarms canceled");
 		} else {
-			if (bt < System.currentTimeMillis())
+			if (bt < System.currentTimeMillis()) {
 				am.cancel(bi);
-			else {
+				Log.v(getClass().getSimpleName(), "lunch begin alarm canceled");
+			} else {
 				am.set(AlarmManager.RTC_WAKEUP, bt, bi);
 				Log.v(getClass().getSimpleName(), "lunch begin alarm set to " + timeString(bt));
 			}
-			if (et < System.currentTimeMillis())
+			if (et < System.currentTimeMillis()) {
 				am.cancel(ei);
-			else {
+				Log.v(getClass().getSimpleName(), "lunch end alarm canceled");
+			} else {
 				am.set(AlarmManager.RTC_WAKEUP, et, ei);
 				Log.v(getClass().getSimpleName(), "lunch end alarm set to " + timeString(et));
 			}
@@ -261,12 +261,10 @@ public class OASession implements OnSharedPreferenceChangeListener {
 	public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
 		checkAlarms();
 		// update the widget(s):
-		Intent intent = new Intent(appContext, OAAppWidget.class);
-		intent.setAction(AppWidgetManager.ACTION_APPWIDGET_UPDATE);
-		int ids[] = AppWidgetManager.getInstance(appContext).getAppWidgetIds(
-			new ComponentName(appContext, OAAppWidget.class));
-		intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, ids);
-		appContext.sendBroadcast(intent);
+		appContext.sendBroadcast(new Intent(appContext, OAAppWidget.class).setAction(
+			AppWidgetManager.ACTION_APPWIDGET_UPDATE).putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS,
+			AppWidgetManager.getInstance(appContext).getAppWidgetIds(new ComponentName(appContext,
+			OAAppWidget.class))));
 	}
 	
 	public static String timeString(long time) {

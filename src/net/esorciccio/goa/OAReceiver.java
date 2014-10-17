@@ -2,6 +2,7 @@ package net.esorciccio.goa;
 
 import java.util.Set;
 
+import android.app.Notification;
 import android.app.NotificationManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -16,53 +17,49 @@ import android.util.Log;
 import android.widget.Toast;
 
 public class OAReceiver extends BroadcastReceiver {
-	public static final int NOTIF_LEAVE_ID = 1;
-	public static final int NOTIF_BLUNC_ID = 2;
-	public static final int NOTIF_ELUNC_ID = 3;
+	private static final int NOTIF_LEAVE = 1;
+	private static final int NOTIF_BLUNC = 2;
+	private static final int NOTIF_ELUNC = 3;
+	private static final Uri NOTIF_SOUND = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
 	
 	@Override
 	public void onReceive(Context context, Intent intent) {
+		NotificationManager nm = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
 		OASession session = OASession.getInstance(context);
-		Uri snd = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
 		String act = intent.getAction();
 		Log.v(getClass().getSimpleName(), act);
 		if (act.equals("android.intent.action.BOOT_COMPLETED")) {
 			session.checkAlarms();
 		} else if (act.equals("android.net.wifi.SCAN_RESULTS")) {
-			WifiManager wifiman = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
-			Set<String> ssids = session.getWifiSet();
 			boolean res = false;
-			for (ScanResult sr : wifiman.getScanResults())
+			Set<String> ssids = session.getWifiSet();
+			for (ScanResult sr : ((WifiManager) context.getSystemService(Context.WIFI_SERVICE)).getScanResults())
 				if (ssids.contains(sr.SSID)) {
 					res = true;
 					break;
 				}
 			session.setInOffice(res);
 		} else if (act.equals(OASession.AC.BLUNC)) {
-			NotificationCompat.Builder ncb = new NotificationCompat.Builder(context).setSound(snd).setSmallIcon(
-				R.drawable.notif_alarm).setContentTitle(context.getString(R.string.msg_blunc_title)).setContentText(
-				context.getString(R.string.msg_blunc_text));
-			NotificationManager nmg = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
-			nmg.notify(NOTIF_BLUNC_ID, ncb.build());
-			Toast.makeText(context, R.string.msg_blunc_title, Toast.LENGTH_LONG).show();
+			nm.notify(NOTIF_BLUNC, getNotif(context, R.string.msg_blunc_title, R.string.msg_blunc_text));
 		} else if (act.equals(OASession.AC.ELUNC)) {
-			NotificationCompat.Builder ncb = new NotificationCompat.Builder(context).setSound(snd).setSmallIcon(
-				R.drawable.notif_alarm).setContentTitle(context.getString(R.string.msg_elunc_title)).setContentText(
-				context.getString(R.string.msg_elunc_text));
-			NotificationManager nmg = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
-			nmg.notify(NOTIF_ELUNC_ID, ncb.build());
-			nmg.cancel(NOTIF_BLUNC_ID);
-			Toast.makeText(context, R.string.msg_elunc_title, Toast.LENGTH_LONG).show();
+			nm.notify(NOTIF_ELUNC, getNotif(context, R.string.msg_elunc_title, R.string.msg_elunc_text));
+			nm.cancel(NOTIF_BLUNC);
 		} else if (act.equals(OASession.AC.LEAVE)) {
-			NotificationCompat.Builder ncb = new NotificationCompat.Builder(context).setSound(snd).setSmallIcon(
-				R.drawable.notif_alarm).setContentTitle(context.getString(R.string.msg_leave_title)).setContentText(
-				context.getString(R.string.msg_leave_text) + DateUtils.getRelativeTimeSpanString(
-				session.getLeaving(), System.currentTimeMillis(), DateUtils.MINUTE_IN_MILLIS).toString());
-			NotificationManager nmg = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
-			nmg.notify(NOTIF_LEAVE_ID, ncb.build());
-			nmg.cancel(NOTIF_BLUNC_ID);
-			nmg.cancel(NOTIF_ELUNC_ID);
-			Toast.makeText(context, R.string.msg_leave_title, Toast.LENGTH_LONG).show();
+			nm.notify(NOTIF_LEAVE, getNotif(context, context.getString(R.string.msg_leave_title),
+				context.getString(R.string.msg_leave_text) + " " + DateUtils.getRelativeTimeSpanString(
+				session.getLeaving(), System.currentTimeMillis(), DateUtils.MINUTE_IN_MILLIS).toString()));
+			nm.cancel(NOTIF_BLUNC);
+			nm.cancel(NOTIF_ELUNC);
 		}
+	}
+	
+	private static Notification getNotif(Context context, int title, int text) {
+		return getNotif(context, context.getString(title), context.getString(text));
+	}
+	
+	private static Notification getNotif(Context context, String title, String text) {
+		Toast.makeText(context, title, Toast.LENGTH_LONG).show();
+		return new NotificationCompat.Builder(context).setSound(NOTIF_SOUND).setSmallIcon(
+			R.drawable.notif_alarm).setContentTitle(title).setContentText(text).build();
 	}
 }

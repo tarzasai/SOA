@@ -107,10 +107,22 @@ public class OASession implements OnSharedPreferenceChangeListener {
 	}
 	
 	public void setInOffice(boolean value) {
+		if (value == getInOffice())
+			return;
+		
 		Log.v(getClass().getSimpleName(), "setInOffice");
 		SharedPreferences.Editor editor = prefs.edit();
 		editor.putBoolean(PK.THERE, value);
 		editor.commit();
+		
+		if (value) {
+			if (getArrival() <= 0)
+				setArrival(System.currentTimeMillis());
+			else
+				setLeft(0);
+		} else if (getArrival() > 0 && getLeft() <= 0) {
+			setLeft(System.currentTimeMillis());
+		}
 	}
 	
 	public long getArrival() {
@@ -133,6 +145,9 @@ public class OASession implements OnSharedPreferenceChangeListener {
 	}
 	
 	public void setArrival(long value) {
+		if (value == getArrival())
+			return;
+		
 		Log.v(getClass().getSimpleName(), "setArrival");
 		SharedPreferences.Editor editor = prefs.edit();
 		editor.putLong(PK.ARRIV, value);
@@ -147,6 +162,9 @@ public class OASession implements OnSharedPreferenceChangeListener {
 	}
 	
 	public void setLeft(long value) {
+		if (value == getLeft())
+			return;
+		
 		Log.v(getClass().getSimpleName(), "setLeaving");
 		SharedPreferences.Editor editor = prefs.edit();
 		editor.putLong(PK.LEAVE, value);
@@ -198,7 +216,7 @@ public class OASession implements OnSharedPreferenceChangeListener {
 			PendingIntent.FLAG_UPDATE_CURRENT);
 	}
 	
-	public void resetAlarms() {
+	public void checkAlarms() {
 		Log.v(getClass().getSimpleName(), "resetAlarms");
 		AlarmManager am = (AlarmManager) appContext.getSystemService(Context.ALARM_SERVICE);
 		
@@ -211,42 +229,37 @@ public class OASession implements OnSharedPreferenceChangeListener {
 		long bt = getLunchBegin();
 		long et = getLunchEnd();
 		
-		if (!(at > 0 && lt > System.currentTimeMillis())) {
+		if (!(getInOffice() && at > 0 && lt > System.currentTimeMillis())) {
 			am.cancel(li);
-			am.cancel(bi);
-			am.cancel(ei);
-			return;
 		} else {
 			am.setRepeating(AlarmManager.RTC_WAKEUP, lt, AlarmManager.INTERVAL_HALF_HOUR, li);
 			Log.v(getClass().getSimpleName(), "leaving alarm set to " + DateUtils.formatSameDayTime(lt,
 				System.currentTimeMillis(), DateFormat.SHORT, DateFormat.MEDIUM).toString());
 		}
 		
-		if (!getPrefs().getBoolean(PK.LUNCH, true)) {
+		if (!(getLunchAlerts() && at > 0 && lt > System.currentTimeMillis())) {
 			am.cancel(bi);
 			am.cancel(ei);
-			return;
-		}
-		
-		if (bt < System.currentTimeMillis())
-			am.cancel(bi);
-		else {
-			am.set(AlarmManager.RTC_WAKEUP, bt, bi);
-			Log.v(getClass().getSimpleName(), "lunch begin alarm set to " + DateUtils.formatSameDayTime(
-				bt, System.currentTimeMillis(), DateFormat.SHORT, DateFormat.MEDIUM).toString());
-		}
-		
-		if (et < System.currentTimeMillis())
-			am.cancel(ei);
-		else {
-			am.set(AlarmManager.RTC_WAKEUP, et, ei);
-			Log.v(getClass().getSimpleName(), "lunch end alarm set to " + DateUtils.formatSameDayTime(
-				et, System.currentTimeMillis(), DateFormat.SHORT, DateFormat.MEDIUM).toString());
+		} else {
+			if (bt < System.currentTimeMillis())
+				am.cancel(bi);
+			else {
+				am.set(AlarmManager.RTC_WAKEUP, bt, bi);
+				Log.v(getClass().getSimpleName(), "lunch begin alarm set to " + DateUtils.formatSameDayTime(
+					bt, System.currentTimeMillis(), DateFormat.SHORT, DateFormat.MEDIUM).toString());
+			}
+			if (et < System.currentTimeMillis())
+				am.cancel(ei);
+			else {
+				am.set(AlarmManager.RTC_WAKEUP, et, ei);
+				Log.v(getClass().getSimpleName(), "lunch end alarm set to " + DateUtils.formatSameDayTime(
+					et, System.currentTimeMillis(), DateFormat.SHORT, DateFormat.MEDIUM).toString());
+			}
 		}
 	}
 	
 	@Override
 	public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
-		resetAlarms();
+		checkAlarms();
 	}
 }

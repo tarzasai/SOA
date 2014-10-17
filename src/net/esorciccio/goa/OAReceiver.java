@@ -37,7 +37,7 @@ public class OAReceiver extends BroadcastReceiver {
 		
 		if (act.equals("android.intent.action.BOOT_COMPLETED")) {
 			
-			session.resetAlarms();
+			session.checkAlarms();
 			
 		} else if (act.equals("android.net.wifi.SCAN_RESULTS")) {
 			
@@ -50,20 +50,6 @@ public class OAReceiver extends BroadcastReceiver {
 					break;
 				}
 			session.setInOffice(res);
-			
-			/*
-			////////////////////////////////////////////////////////////
-			if (inOffice(context)) {
-				if (session.getArrival() <= 0)
-					session.setArrival(System.currentTimeMillis());
-				else if (session.getLeft() > 0)
-					session.setLeft(0);
-			} else if (session.getArrival() > 0) {
-				if (session.getLeft() <= 0)
-					session.setLeft(System.currentTimeMillis());
-			}
-			/////////////////////////////////////////////////////////
-			*/
 			
 		} else if (act.equals(OASession.AC.BLUNC)) {
 			

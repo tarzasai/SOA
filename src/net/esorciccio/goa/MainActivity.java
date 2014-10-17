@@ -3,7 +3,6 @@ package net.esorciccio.goa;
 import java.text.DateFormat;
 import java.util.Calendar;
 
-import net.esorciccio.goa.OASession.PK;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -35,7 +34,7 @@ public class MainActivity extends ActionBarActivity implements OnSharedPreferenc
 		setContentView(R.layout.activity_main);
 		
 		session = OASession.getInstance(this);
-		session.resetAlarms();
+		session.checkAlarms();
 		
 		txtArrival = (TextView) findViewById(R.id.txt_arrival);
 		txtLeaving = (TextView) findViewById(R.id.txt_leave);
@@ -54,17 +53,7 @@ public class MainActivity extends ActionBarActivity implements OnSharedPreferenc
 		
 		session.getPrefs().registerOnSharedPreferenceChangeListener(this);
 		
-		txtArrival.setText(DateUtils.formatSameDayTime(session.getArrival(), System.currentTimeMillis(),
-			DateFormat.SHORT, DateFormat.MEDIUM));
-		txtLeaving.setText(DateUtils.formatSameDayTime(session.getLeaving(), System.currentTimeMillis(),
-			DateFormat.SHORT, DateFormat.MEDIUM));
-		if (session.getLeft() <= 0)
-			rowTmpLeft.setVisibility(View.GONE);
-		else {
-			rowTmpLeft.setVisibility(View.VISIBLE);
-			txtTmpLeft.setText(DateUtils.formatSameDayTime(session.getLeft(), System.currentTimeMillis(),
-				DateFormat.SHORT, DateFormat.MEDIUM));
-		}
+		updateView();
 	}
 	
 	@Override
@@ -126,14 +115,22 @@ public class MainActivity extends ActionBarActivity implements OnSharedPreferenc
 	
 	@Override
 	public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
-		if (key.equals(PK.ARRIV) || key.equals(PK.HOURS)) {
-			txtArrival.setText(DateUtils.formatSameDayTime(session.getArrival(), System.currentTimeMillis(),
-				DateFormat.SHORT, DateFormat.MEDIUM));
-			txtLeaving.setText(DateUtils.formatSameDayTime(session.getLeaving(), System.currentTimeMillis(),
-				DateFormat.SHORT, DateFormat.MEDIUM));
-		} else if (key.equals(PK.LEAVE)) {
+		updateView();
+	}
+	
+	private void updateView() {
+		txtArrival.setText(DateUtils.formatSameDayTime(session.getArrival(), System.currentTimeMillis(),
+			DateFormat.SHORT, DateFormat.SHORT));
+		
+		txtLeaving.setText(DateUtils.formatSameDayTime(session.getLeaving(), System.currentTimeMillis(),
+			DateFormat.SHORT, DateFormat.SHORT));
+		
+		if (session.getLeft() <= 0)
+			rowTmpLeft.setVisibility(View.GONE);
+		else {
+			rowTmpLeft.setVisibility(View.VISIBLE);
 			txtTmpLeft.setText(DateUtils.formatSameDayTime(session.getLeft(), System.currentTimeMillis(),
-				DateFormat.SHORT, DateFormat.MEDIUM));
+				DateFormat.SHORT, DateFormat.SHORT));
 		}
 	}
 }

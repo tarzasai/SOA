@@ -9,6 +9,8 @@ import java.util.Set;
 
 import android.app.AlarmManager;
 import android.app.PendingIntent;
+import android.appwidget.AppWidgetManager;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -233,8 +235,7 @@ public class OASession implements OnSharedPreferenceChangeListener {
 			am.cancel(li);
 		} else {
 			am.setRepeating(AlarmManager.RTC_WAKEUP, lt, AlarmManager.INTERVAL_HALF_HOUR, li);
-			Log.v(getClass().getSimpleName(), "leaving alarm set to " + DateUtils.formatSameDayTime(lt,
-				System.currentTimeMillis(), DateFormat.SHORT, DateFormat.MEDIUM).toString());
+			Log.v(getClass().getSimpleName(), "leaving alarm set to " + timeString(lt));
 		}
 		
 		if (!(getLunchAlerts() && at > 0 && lt > System.currentTimeMillis())) {
@@ -245,15 +246,13 @@ public class OASession implements OnSharedPreferenceChangeListener {
 				am.cancel(bi);
 			else {
 				am.set(AlarmManager.RTC_WAKEUP, bt, bi);
-				Log.v(getClass().getSimpleName(), "lunch begin alarm set to " + DateUtils.formatSameDayTime(
-					bt, System.currentTimeMillis(), DateFormat.SHORT, DateFormat.MEDIUM).toString());
+				Log.v(getClass().getSimpleName(), "lunch begin alarm set to " + timeString(bt));
 			}
 			if (et < System.currentTimeMillis())
 				am.cancel(ei);
 			else {
 				am.set(AlarmManager.RTC_WAKEUP, et, ei);
-				Log.v(getClass().getSimpleName(), "lunch end alarm set to " + DateUtils.formatSameDayTime(
-					et, System.currentTimeMillis(), DateFormat.SHORT, DateFormat.MEDIUM).toString());
+				Log.v(getClass().getSimpleName(), "lunch end alarm set to " + timeString(et));
 			}
 		}
 	}
@@ -261,5 +260,17 @@ public class OASession implements OnSharedPreferenceChangeListener {
 	@Override
 	public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
 		checkAlarms();
+		// update the widget(s):
+		Intent intent = new Intent(appContext, OAAppWidget.class);
+		intent.setAction(AppWidgetManager.ACTION_APPWIDGET_UPDATE);
+		int ids[] = AppWidgetManager.getInstance(appContext).getAppWidgetIds(
+			new ComponentName(appContext, OAAppWidget.class));
+		intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, ids);
+		appContext.sendBroadcast(intent);
+	}
+	
+	public static String timeString(long time) {
+		return time <= 0 ? "n/a" : DateUtils.formatSameDayTime(time, System.currentTimeMillis(), DateFormat.SHORT,
+			DateFormat.SHORT).toString();
 	}
 }

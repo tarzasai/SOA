@@ -1,6 +1,5 @@
 package net.esorciccio.goa;
 
-import java.text.DateFormat;
 import java.util.Calendar;
 
 import android.app.AlertDialog;
@@ -10,7 +9,6 @@ import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
-import android.text.format.DateUtils;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -119,18 +117,9 @@ public class MainActivity extends ActionBarActivity implements OnSharedPreferenc
 	}
 	
 	private void updateView() {
-		txtArrival.setText(DateUtils.formatSameDayTime(session.getArrival(), System.currentTimeMillis(),
-			DateFormat.SHORT, DateFormat.SHORT));
-		
-		txtLeaving.setText(DateUtils.formatSameDayTime(session.getLeaving(), System.currentTimeMillis(),
-			DateFormat.SHORT, DateFormat.SHORT));
-		
-		if (session.getLeft() <= 0)
-			rowTmpLeft.setVisibility(View.GONE);
-		else {
-			rowTmpLeft.setVisibility(View.VISIBLE);
-			txtTmpLeft.setText(DateUtils.formatSameDayTime(session.getLeft(), System.currentTimeMillis(),
-				DateFormat.SHORT, DateFormat.SHORT));
-		}
+		txtArrival.setText(OASession.timeString(session.getArrival()));
+		txtLeaving.setText(OASession.timeString(session.getLeaving()));
+		txtTmpLeft.setText(OASession.timeString(session.getLeft()));
+		rowTmpLeft.setVisibility(session.getLeft() <= 0 ? View.GONE : View.VISIBLE);
 	}
 }

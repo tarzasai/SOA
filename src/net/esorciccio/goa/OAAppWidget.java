@@ -1,14 +1,12 @@
 package net.esorciccio.goa;
 
-import java.text.DateFormat;
-
 import android.app.PendingIntent;
 import android.appwidget.AppWidgetManager;
 import android.appwidget.AppWidgetProvider;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
-import android.text.format.DateUtils;
+import android.util.Log;
 import android.widget.RemoteViews;
 
 public class OAAppWidget extends AppWidgetProvider {
@@ -17,6 +15,7 @@ public class OAAppWidget extends AppWidgetProvider {
 	
 	@Override
 	public void onUpdate(Context context, AppWidgetManager appWidgetManager, int[] appWidgetIds) {
+		Log.v(getClass().getSimpleName(), "onUpdate");
 		session = OASession.getInstance(context);
 		// There may be multiple widgets active, so update all of them
 		for (int appWidgetId : appWidgetIds)
@@ -43,16 +42,9 @@ public class OAAppWidget extends AppWidgetProvider {
 	
 	static void updateAppWidget(Context context, OASession session, AppWidgetManager awManager, int awId) {
 		RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.widget_1_1);
-		
-		views.setTextViewText(R.id.txt_arrival, session.getArrival() <= 0 ? "n/a" : DateUtils.formatSameDayTime(
-			session.getArrival(), System.currentTimeMillis(), DateFormat.SHORT, DateFormat.SHORT));
-		
-		views.setTextViewText(R.id.txt_leaving, session.getArrival() <= 0 ? "n/a" : DateUtils.formatSameDayTime(
-			session.getLeaving(), System.currentTimeMillis(), DateFormat.SHORT, DateFormat.SHORT));
-		
-		views.setTextViewText(R.id.txt_left, session.getLeft() <= 0 ? "n/a" : DateUtils.formatSameDayTime(
-			session.getLeft(), System.currentTimeMillis(), DateFormat.SHORT, DateFormat.SHORT));
-		
+		views.setTextViewText(R.id.txt_arrival, OASession.timeString(session.getArrival()));
+		views.setTextViewText(R.id.txt_leaving, OASession.timeString(session.getLeaving()));
+		views.setTextViewText(R.id.txt_left, OASession.timeString(session.getLeft()));
 		awManager.updateAppWidget(awId, views);
 	}
 }

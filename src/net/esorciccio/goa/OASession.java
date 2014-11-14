@@ -15,6 +15,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
+import android.graphics.Typeface;
 import android.preference.PreferenceManager;
 import android.text.format.DateUtils;
 import android.util.Log;
@@ -47,17 +48,20 @@ public class OASession implements OnSharedPreferenceChangeListener {
 			singleton = new OASession(context);
 		return singleton;
 	}
-	
-	private final SharedPreferences prefs;
+
 	private final String[] daynames;
+	private final SharedPreferences prefs;
+	private final Typeface fontDSB;
 	
 	public OASession(Context context) {
 		appContext = context.getApplicationContext();
 		
+		daynames = new DateFormatSymbols(Locale.getDefault()).getWeekdays();
+		
 		prefs = PreferenceManager.getDefaultSharedPreferences(appContext);
 		prefs.registerOnSharedPreferenceChangeListener(this);
 		
-		daynames = new DateFormatSymbols(Locale.getDefault()).getWeekdays();
+		fontDSB = Typeface.createFromAsset(context.getAssets(), "fonts/DaysSansBlack.otf");
 	}
 	
 	public SharedPreferences getPrefs() {
@@ -257,14 +261,17 @@ public class OASession implements OnSharedPreferenceChangeListener {
 		}
 	}
 	
+	public void updateWidget() {
+		appContext.sendBroadcast(new Intent(appContext, OAWidgetSmall.class).setAction(
+			AppWidgetManager.ACTION_APPWIDGET_UPDATE).putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS,
+			AppWidgetManager.getInstance(appContext).getAppWidgetIds(new ComponentName(appContext,
+			OAWidgetSmall.class))));
+	}
+	
 	@Override
 	public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
 		checkAlarms();
-		// update the widget(s):
-		appContext.sendBroadcast(new Intent(appContext, OAAppWidget.class).setAction(
-			AppWidgetManager.ACTION_APPWIDGET_UPDATE).putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS,
-			AppWidgetManager.getInstance(appContext).getAppWidgetIds(new ComponentName(appContext,
-			OAAppWidget.class))));
+		updateWidget();
 	}
 	
 	public static String timeString(long time) {

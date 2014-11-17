@@ -2,7 +2,9 @@ package net.esorciccio.goa;
 
 import java.text.DateFormat;
 import java.text.DateFormatSymbols;
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.Locale;
 import java.util.Set;
@@ -51,7 +53,7 @@ public class OASession implements OnSharedPreferenceChangeListener {
 
 	private final String[] daynames;
 	private final SharedPreferences prefs;
-	private final Typeface fontDSB;
+	private final Typeface fontClock;
 	
 	public OASession(Context context) {
 		appContext = context.getApplicationContext();
@@ -60,12 +62,16 @@ public class OASession implements OnSharedPreferenceChangeListener {
 		
 		prefs = PreferenceManager.getDefaultSharedPreferences(appContext);
 		prefs.registerOnSharedPreferenceChangeListener(this);
-		
-		fontDSB = Typeface.createFromAsset(context.getAssets(), "fonts/DaysSansBlack.otf");
+
+		fontClock = Typeface.createFromAsset(context.getAssets(), "fonts/Sansation Bold.ttf");
 	}
 	
 	public SharedPreferences getPrefs() {
 		return prefs;
+	}
+	
+	public Typeface getFontClock() {
+		return fontClock;
 	}
 	
 	public String getDayName() {
@@ -272,6 +278,10 @@ public class OASession implements OnSharedPreferenceChangeListener {
 	public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
 		checkAlarms();
 		updateWidget();
+	}
+	
+	public static String dateString(long time, String format) {
+		return new SimpleDateFormat(format, Locale.getDefault()).format(new Date(time));
 	}
 	
 	public static String timeString(long time) {

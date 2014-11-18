@@ -1,6 +1,6 @@
-package net.esorciccio.goa;
+package net.esorciccio.soa;
 
-import net.esorciccio.goa.R;
+import net.esorciccio.soa.R;
 import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;

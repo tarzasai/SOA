@@ -1,4 +1,4 @@
-package net.esorciccio.goa;
+package net.esorciccio.soa;
 
 import java.text.DateFormat;
 import java.text.DateFormatSymbols;
@@ -25,9 +25,9 @@ import android.util.Log;
 public class OASession implements OnSharedPreferenceChangeListener {
 	
 	static class AC {
-		public static final String LEAVE = "net.esorciccio.goa.OASession.AC.LEAVE";
-		public static final String BLUNC = "net.esorciccio.goa.OASession.AC.BLUNC";
-		public static final String ELUNC = "net.esorciccio.goa.OASession.AC.ELUNC";
+		public static final String LEAVE = "net.esorciccio.soa.OASession.AC.LEAVE";
+		public static final String BLUNC = "net.esorciccio.soa.OASession.AC.BLUNC";
+		public static final String ELUNC = "net.esorciccio.soa.OASession.AC.ELUNC";
 	}
 	
 	static class PK {

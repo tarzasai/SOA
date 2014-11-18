@@ -40,6 +40,8 @@
     <string name="test_alarm">mer 22:58</string>
     <string name="test_day">mercoledì</string>
     <string name="test_boh">n/a</string>
+    <string name="test_phone">22.06€</string>
+    <string name="test_traff">2161MB</string>
     <string name="test_wifi">Alice3924987293798</string>
     <string name="add_widget">Add widget</string>
 

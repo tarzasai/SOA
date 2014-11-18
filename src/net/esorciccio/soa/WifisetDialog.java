@@ -1,9 +1,9 @@
-package net.esorciccio.goa;
+package net.esorciccio.soa;
 
 import java.util.HashSet;
 import java.util.Set;
 
-import net.esorciccio.goa.R;
+import net.esorciccio.soa.R;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;

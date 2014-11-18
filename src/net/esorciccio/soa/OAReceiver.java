@@ -1,7 +1,7 @@
-package net.esorciccio.goa;
+package net.esorciccio.soa;
 
 import java.util.Set;
-
+import net.esorciccio.soa.R;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.content.BroadcastReceiver;

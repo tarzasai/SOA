@@ -1,7 +1,7 @@
-package net.esorciccio.goa;
+package net.esorciccio.soa;
 
 import java.util.Calendar;
-
+import net.esorciccio.soa.R;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;

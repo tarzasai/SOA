@@ -1,11 +1,11 @@
-package net.esorciccio.goa;
+package net.esorciccio.soa;
 
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import net.esorciccio.goa.R;
+import net.esorciccio.soa.R;
 import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;

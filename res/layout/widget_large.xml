@@ -5,19 +5,19 @@
     android:alpha="0.8"
     android:background="@android:color/black"
     android:padding="@dimen/widget_margin" >
-    
+
     <LinearLayout
         android:id="@+id/lil_boxl"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:layout_centerInParent="true"
         android:orientation="vertical" >
-        
+
         <LinearLayout
             android:layout_width="fill_parent"
             android:layout_height="24dp"
             android:gravity="center_vertical" >
-            
+
             <TextView
                 android:id="@+id/txt_arrival"
                 android:layout_width="wrap_content"
@@ -29,7 +29,7 @@
                 android:text="@string/test_time"
                 android:textAppearance="?android:attr/textAppearanceSmall"
                 android:textColor="@android:color/white" />
-            
+
             <TextView
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
@@ -46,15 +46,14 @@
                 android:text="@string/test_date"
                 android:textAppearance="?android:attr/textAppearanceSmall"
                 android:textColor="@android:color/white" />
-
         </LinearLayout>
-        
+
         <LinearLayout
             android:layout_width="fill_parent"
             android:layout_height="24dp"
             android:layout_marginTop="-4dp"
             android:gravity="center_vertical" >
-            
+
             <TextView
                 android:id="@+id/txt_leaving"
                 android:layout_width="wrap_content"
@@ -66,7 +65,7 @@
                 android:text="@string/test_time"
                 android:textAppearance="?android:attr/textAppearanceSmall"
                 android:textColor="@android:color/white" />
-            
+
             <TextView
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
@@ -83,34 +82,74 @@
                 android:text="@string/test_alarm"
                 android:textAppearance="?android:attr/textAppearanceSmall"
                 android:textColor="@android:color/white" />
-
         </LinearLayout>
 
         <TextView
             android:id="@+id/textView1"
             android:layout_width="fill_parent"
             android:layout_height="1dp"
-            android:layout_marginTop="5dp"
+            android:layout_marginBottom="3dp"
+            android:layout_marginTop="3dp"
             android:background="@android:color/darker_gray" />
 
+        <LinearLayout
+            android:layout_width="fill_parent"
+            android:layout_height="24dp" >
+
+            <TextView
+                android:id="@+id/txt_phone"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginRight="6dp"
+                android:drawableLeft="@drawable/ic_action_phone"
+                android:drawablePadding="-4dp"
+                android:gravity="left|center_vertical"
+                android:text="@string/test_phone"
+                android:textColor="@android:color/white" />
+
+            <TextView
+                android:id="@+id/txt_data"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:drawableLeft="@drawable/ic_action_data"
+                android:drawablePadding="-4dp"
+                android:gravity="left|center_vertical"
+                android:text="@string/test_traff"
+                android:textColor="@android:color/white" />
+
+        </LinearLayout>
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="fill_parent"
+        android:layout_height="72dp"
+        android:layout_centerVertical="true" >
+
+        <FrameLayout
+            android:id="@+id/frm_left"
+            android:layout_width="88dp"
+            android:layout_height="match_parent" >
+        </FrameLayout>
+
         <TextView
-            android:id="@+id/textView2"
+            android:id="@+id/txt_clock"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginEnd="8dp"
-            android:layout_marginStart="8dp"
-            android:layout_marginTop="3dp"
-            android:text="@string/test_wifi"
-            android:textColor="@android:color/white" />
+            android:layout_marginTop="-12dp"
+            android:text="@string/test_time"
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:textColor="@android:color/white"
+            android:textSize="47sp"
+            android:textStyle="bold" />
+
+        <FrameLayout
+            android:id="@+id/frm_right"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1" >
+
+        </FrameLayout>
 
     </LinearLayout>
-    
-    <ImageView
-        android:id="@+id/img_time"
-        android:layout_width="180dp"
-        android:layout_height="70dp"
-        android:layout_centerInParent="true"
-        android:contentDescription="@string/txt_empty"
-        android:src="@drawable/ic_launcher" />
-    
+
 </RelativeLayout>

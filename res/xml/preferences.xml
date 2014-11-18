@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" >
     
-    <net.esorciccio.goa.DaysetsDialog
+    <net.esorciccio.soa.DaysetsDialog
         android:summary="@string/pd_dayset_summ"
         android:title="@string/pd_dayset_title" />
     
-    <net.esorciccio.goa.WifisetDialog
+    <net.esorciccio.soa.WifisetDialog
         android:summary="@string/pd_wifiset_summ"
         android:title="@string/pd_wifiset_title" />
     
@@ -25,12 +25,12 @@
             android:summary="@string/pk_lunch_summ"
             android:title="@string/pk_lunch_title" />
 	    
-	    <net.esorciccio.goa.TimePreference
+	    <net.esorciccio.soa.TimePreference
 	        android:key="pk_lstart"
 	        android:title="@string/pk_lstart_title"
 	        android:defaultValue="13:30" />
 	    
-	    <net.esorciccio.goa.TimePreference
+	    <net.esorciccio.soa.TimePreference
 	        android:key="pk_lstop"
 	        android:title="@string/pk_lstop_title"
 	        android:defaultValue="14:30" />

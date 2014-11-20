@@ -1,14 +1,14 @@
 package net.esorciccio.soa;
 
 import java.util.Calendar;
-import net.esorciccio.soa.R;
+
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.os.Bundle;
-import android.support.v7.app.ActionBarActivity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -17,7 +17,7 @@ import android.widget.TableRow;
 import android.widget.TextView;
 import android.widget.Toast;
 
-public class MainActivity extends ActionBarActivity implements OnSharedPreferenceChangeListener {
+public class MainActivity extends Activity implements OnSharedPreferenceChangeListener {
 	
 	private OASession session;
 	

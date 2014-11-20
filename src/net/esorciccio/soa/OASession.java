@@ -18,6 +18,8 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.graphics.Typeface;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.preference.PreferenceManager;
 import android.text.format.DateUtils;
 import android.util.Log;
@@ -40,6 +42,10 @@ public class OASession implements OnSharedPreferenceChangeListener {
 		public static final String LUNCH = "pk_lunch";
 		public static final String BLUNC = "pk_lstart";
 		public static final String ELUNC = "pk_lstop";
+		public static final String L3TIM = "last_3_time";
+		public static final String L3CRE = "last_3_cred";
+		public static final String L3TRA = "last_3_traf";
+		public static final String L3ERR = "last_3_fail";
 	}
 	
 	private static Context appContext;
@@ -49,6 +55,12 @@ public class OASession implements OnSharedPreferenceChangeListener {
 		if (singleton == null)
 			singleton = new OASession(context);
 		return singleton;
+	}
+	
+	public static boolean isOnWIFI(Context context) {
+		ConnectivityManager cm = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+		NetworkInfo ni = cm.getActiveNetworkInfo();
+		return ni != null && ni.isConnectedOrConnecting() && ni.getType() == ConnectivityManager.TYPE_WIFI;
 	}
 
 	private final String[] daynames;
@@ -221,6 +233,35 @@ public class OASession implements OnSharedPreferenceChangeListener {
 		cal.set(Calendar.SECOND, 0);
 		cal.set(Calendar.MILLISECOND, 0);
 		return cal.getTimeInMillis();
+	}
+	
+	public void setLast3time(long time) {
+		Log.v(getClass().getSimpleName(), "setLast3time");
+		SharedPreferences.Editor editor = prefs.edit();
+		editor.putLong(PK.L3TIM, time);
+		editor.remove(PK.L3ERR);
+		editor.commit();
+	}
+	
+	public void setLast3fail(String error) {
+		Log.v(getClass().getSimpleName(), "setLast3fail");
+		SharedPreferences.Editor editor = prefs.edit();
+		editor.putString(PK.L3ERR, error);
+		editor.commit();
+	}
+	
+	public void setLast3cred(String credito) {
+		Log.v(getClass().getSimpleName(), "setLast3cred");
+		SharedPreferences.Editor editor = prefs.edit();
+		editor.putString(PK.L3CRE, credito);
+		editor.commit();
+	}
+	
+	public void setLast3traf(String traffico) {
+		Log.v(getClass().getSimpleName(), "setLast3traf");
+		SharedPreferences.Editor editor = prefs.edit();
+		editor.putString(PK.L3TRA, traffico);
+		editor.commit();
 	}
 	
 	private static PendingIntent mkPI(String action) {

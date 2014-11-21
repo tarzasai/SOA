@@ -1,12 +1,15 @@
 package net.esorciccio.soa;
 
+import java.lang.reflect.Method;
 import java.util.Set;
-import net.esorciccio.soa.R;
+
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.media.AudioManager;
 import android.media.RingtoneManager;
 import android.net.Uri;
 import android.net.wifi.ScanResult;
@@ -17,10 +20,19 @@ import android.util.Log;
 import android.widget.Toast;
 
 public class OAReceiver extends BroadcastReceiver {
+	public static final String REQ_CC = "net.esorciccio.soa.REQUEST_CLEAR_CACHE";
+	public static final String REQ_VD = "net.esorciccio.soa.REQUEST_VOLUME_DOWN";
+	public static final String REQ_VU = "net.esorciccio.soa.REQUEST_VOLUME_UP";
+	
 	private static final int NOTIF_LEAVE = 1;
 	private static final int NOTIF_BLUNC = 2;
 	private static final int NOTIF_ELUNC = 3;
 	private static final Uri NOTIF_SOUND = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+	private static final int VFLAGS = AudioManager.FLAG_PLAY_SOUND + AudioManager.FLAG_SHOW_UI;
+	
+	private static AudioManager audioMan(Context context) {
+		return (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
+	}
 	
 	@Override
 	public void onReceive(Context context, Intent intent) {
@@ -50,6 +62,23 @@ public class OAReceiver extends BroadcastReceiver {
 				session.getLeaving(), System.currentTimeMillis(), DateUtils.MINUTE_IN_MILLIS).toString()));
 			nm.cancel(NOTIF_BLUNC);
 			nm.cancel(NOTIF_ELUNC);
+		} else if (act.equals(REQ_CC)) {
+			PackageManager pm = context.getPackageManager();
+			for (Method m : pm.getClass().getDeclaredMethods())
+				if (m.getName().equals("freeStorageAndNotify")) {
+					try {
+						m.invoke(pm, Integer.MAX_VALUE, null);
+						m.invoke(pm, Long.MAX_VALUE, null);
+					} catch (Exception e) {
+						Log.e(this.getClass().getSimpleName(), "onReceive", e); // permission problem?
+					}
+					break;
+				}
+			Toast.makeText(context, "request sent", Toast.LENGTH_SHORT).show();
+		} else if (act.equals(REQ_VU)) {
+			audioMan(context).adjustStreamVolume(AudioManager.STREAM_MUSIC, AudioManager.ADJUST_RAISE, VFLAGS);
+		} else if (act.equals(REQ_VD)) {
+			audioMan(context).adjustStreamVolume(AudioManager.STREAM_MUSIC, AudioManager.ADJUST_LOWER, VFLAGS);
 		}
 	}
 	

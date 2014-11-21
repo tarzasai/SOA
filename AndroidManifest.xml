@@ -26,10 +26,12 @@
         <activity
             android:name=".MainActivity"
             android:label="@string/app_name" >
+            <!--
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+            -->
         </activity>
         <activity
             android:name=".SettingsActivity"
@@ -43,6 +45,9 @@
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
                 <action android:name="android.net.wifi.SCAN_RESULTS" />
+                <action android:name="net.esorciccio.soa.REQUEST_CLEAR_CACHE" />
+                <action android:name="net.esorciccio.soa.REQUEST_VOLUME_DOWN" />
+                <action android:name="net.esorciccio.soa.REQUEST_VOLUME_UP" />
             </intent-filter>
         </receiver>
         

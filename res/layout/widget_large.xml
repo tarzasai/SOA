@@ -85,7 +85,6 @@
         </LinearLayout>
 
         <TextView
-            android:id="@+id/textView1"
             android:layout_width="fill_parent"
             android:layout_height="1dp"
             android:layout_marginBottom="3dp"
@@ -94,28 +93,45 @@
 
         <LinearLayout
             android:layout_width="fill_parent"
-            android:layout_height="24dp" >
+            android:layout_height="24dp"
+            android:gravity="center_vertical"
+            android:paddingRight="4dp" >
 
             <TextView
-                android:id="@+id/txt_phone"
+                android:id="@+id/txt_3_data"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginRight="6dp"
-                android:drawableLeft="@drawable/ic_action_phone"
+                android:drawableLeft="@drawable/ic_action_h3g"
+                android:drawableRight="@drawable/ic_action_error"
                 android:drawablePadding="-4dp"
                 android:gravity="left|center_vertical"
-                android:text="@string/test_phone"
+                android:text="@string/test_3data"
                 android:textColor="@android:color/white" />
 
             <TextView
-                android:id="@+id/txt_data"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1" />
+
+            <Button
+                android:id="@+id/btn_voldn"
+                style="?android:attr/buttonStyleSmall"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:drawableLeft="@drawable/ic_action_data"
-                android:drawablePadding="-4dp"
-                android:gravity="left|center_vertical"
-                android:text="@string/test_traff"
-                android:textColor="@android:color/white" />
+                android:layout_marginBottom="-4dp"
+                android:layout_marginTop="-4dp"
+                android:text="@string/test_voldn"
+                android:textSize="9sp" />
+
+            <Button
+                android:id="@+id/btn_volup"
+                style="?android:attr/buttonStyleSmall"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="-4dp"
+                android:layout_marginTop="-4dp"
+                android:text="@string/test_volup"
+                android:textSize="9sp" />
 
         </LinearLayout>
     </LinearLayout>
@@ -141,14 +157,6 @@
             android:textColor="@android:color/white"
             android:textSize="47sp"
             android:textStyle="bold" />
-
-        <FrameLayout
-            android:id="@+id/frm_right"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="1" >
-
-        </FrameLayout>
 
     </LinearLayout>
 

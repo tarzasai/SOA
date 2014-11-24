@@ -13,6 +13,7 @@
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
     <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.CLEAR_APP_CACHE" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
@@ -33,9 +34,28 @@
             </intent-filter>
             -->
         </activity>
+        
         <activity
             android:name=".SettingsActivity"
             android:label="@string/settings_title" >
+        </activity>
+        
+        <activity 
+            android:name=".CCShortcut"
+            android:label="@string/shortcut_name"
+            android:icon="@drawable/ic_action_delete" >
+            <intent-filter>
+                <action android:name="android.intent.action.CREATE_SHORTCUT"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+            </intent-filter>
+        </activity>
+        
+        <activity 
+            android:name=".CCHidden"
+            android:theme="@android:style/Theme.NoDisplay" >
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+            </intent-filter>
         </activity>
 
         <receiver
@@ -45,9 +65,10 @@
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
                 <action android:name="android.net.wifi.SCAN_RESULTS" />
-                <action android:name="net.esorciccio.soa.REQUEST_CLEAR_CACHE" />
+                <action android:name="net.esorciccio.soa.REQUEST_CACHE_CLEAR" />
                 <action android:name="net.esorciccio.soa.REQUEST_VOLUME_DOWN" />
                 <action android:name="net.esorciccio.soa.REQUEST_VOLUME_UP" />
+                <action android:name="net.esorciccio.soa.REQUEST_DIALOG_TRE" />
             </intent-filter>
         </receiver>
         

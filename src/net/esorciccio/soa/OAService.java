@@ -38,11 +38,12 @@ public class OAService extends IntentService implements OnSharedPreferenceChange
 	
 	private OASession session;
 	private boolean terminated = false;
-	
+
+	private boolean running3 = false;
 	private boolean error3 = false;
-	private Long time3 = Long.valueOf(0);
 	private String credito = "n/a";
 	private String traffico = "n/a";
+	private Long time3 = Long.valueOf(0);
 	
 	public OAService() {
 		super("OAService");
@@ -63,15 +64,17 @@ public class OAService extends IntentService implements OnSharedPreferenceChange
 		try {
 			while (!terminated) {
 				if (!OASession.isOnWIFI(this) && (time3 <= 0 || (System.currentTimeMillis() - time3) > (30 * 60000))) {
+					
 					time3 = System.currentTimeMillis();
-					
-					// Intent tre = new Intent(getBaseContext(), TreActivity.class);
-					Intent tre = new Intent(this, TreActivity.class);
+					Intent tre = new Intent(getBaseContext(), TreActivity.class);
 					tre.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-					// getApplication().startActivity(tre);
-					this.startActivity(tre);
+					getApplication().startActivity(tre);
 					
-					//checkTre();
+					/*
+					if (!running3)
+						checkTre();
+					*/
+					
 				}
 				error3 = !TextUtils.isEmpty(session.getPrefs().getString(PK.L3ERR, null));
 				credito = session.getPrefs().getString(PK.L3CRE, null);
@@ -91,6 +94,16 @@ public class OAService extends IntentService implements OnSharedPreferenceChange
 	}
 	
 	@Override
+	public void onDestroy() {
+		super.onDestroy();
+		
+		if (wv != null) {
+			WindowManager wm = (WindowManager) getSystemService(WINDOW_SERVICE);
+			wm.removeView(wv);
+		}
+	}
+	
+	@Override
 	public void onSharedPreferenceChanged(SharedPreferences prefs, String key) {
 		Log.v(TAG, "onSharedPreferenceChanged (" + key + ")");
 		/*
@@ -103,106 +116,90 @@ public class OAService extends IntentService implements OnSharedPreferenceChange
 	private RemoteViews buildUpdate(Context context) {
 		RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.widget_large);
 		
+		views.setTextViewText(R.id.txt_arrival, OASession.timeString(session.getArrival()));
+		
+		views.setTextViewText(R.id.txt_leaving, OASession.timeString(session.getLeaving()));
+		
+		views.setTextViewText(R.id.txt_clock, OASession.timeString(System.currentTimeMillis()));
+		
+		views.setTextViewText(R.id.txt_today, OASession.dateString(System.currentTimeMillis(), "EEE d MMM"));
+
 		@SuppressWarnings("deprecation")
 		String alarm = Settings.System.getString(context.getContentResolver(), Settings.System.NEXT_ALARM_FORMATTED);
+		views.setTextViewText(R.id.txt_alarm, !TextUtils.isEmpty(alarm) ? alarm : "nessuna");
 		
-		views.setTextViewText(R.id.txt_arrival, OASession.timeString(session.getArrival()));
-		views.setTextViewText(R.id.txt_leaving, OASession.timeString(session.getLeaving()));
-		// views.setTextViewText(R.id.txt_clock, "23:48");
-		views.setTextViewText(R.id.txt_clock, OASession.timeString(System.currentTimeMillis()));
-		views.setTextViewText(R.id.txt_today, OASession.dateString(System.currentTimeMillis(), "EEE d MMM"));
-		views.setTextViewText(R.id.txt_alarm, alarm);
-		views.setTextViewText(R.id.txt_3_data, credito + " / " + traffico);
-		views.setTextViewCompoundDrawables(R.id.txt_3_data, R.drawable.ic_action_h3g, 0, error3 ?
+		views.setTextViewText(R.id.txt_tre, credito + " / " + traffico);
+		
+		views.setTextViewCompoundDrawables(R.id.txt_tre, R.drawable.ic_action_h3g, 0, error3 ?
 			R.drawable.ic_action_error : 0, 0);
-		/*
-		views.setOnClickPendingIntent(R.id.btn_voldn,
-			PendingIntent.getBroadcast(context, appWidgetId, new Intent(SBReceiver.REQ_VD), 0));
-		views.setOnClickPendingIntent(R.id.btn_voldn,
-			PendingIntent.getBroadcast(context, appWidgetId, new Intent(SBReceiver.REQ_VU), 0));
-		*/
 		
-		//
-		PendingIntent pendingIntent;
+		views.setOnClickPendingIntent(R.id.txt_tre, PendingIntent.getBroadcast(context, 0,
+			new Intent(OAReceiver.REQ_E3), 0));
 		
-		Intent mainIntent = new Intent(context, MainActivity.class);
-		pendingIntent = PendingIntent.getActivity(context, 0, mainIntent, 0);
-		views.setOnClickPendingIntent(R.id.frm_left, pendingIntent);
+		views.setOnClickPendingIntent(R.id.btn_voldn, PendingIntent.getBroadcast(context, 0,
+			new Intent(OAReceiver.REQ_VD), 0));
+		
+		views.setOnClickPendingIntent(R.id.btn_volup, PendingIntent.getBroadcast(context, 0,
+			new Intent(OAReceiver.REQ_VU), 0));
+		
+		views.setOnClickPendingIntent(R.id.frm_left, PendingIntent.getActivity(context, 0,
+			new Intent(context, MainActivity.class), 0));
 		
 		try {
 			Intent clockIntent = new Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_LAUNCHER);
 			ComponentName cn = new ComponentName("com.google.android.deskclock", "com.android.deskclock.DeskClock");
 			context.getPackageManager().getActivityInfo(cn, PackageManager.GET_META_DATA);
 			clockIntent.setComponent(cn);
-			pendingIntent = PendingIntent.getActivity(context, 0, clockIntent, 0);
-			views.setOnClickPendingIntent(R.id.txt_clock, pendingIntent);
+			views.setOnClickPendingIntent(R.id.txt_clock, PendingIntent.getActivity(context, 0, clockIntent, 0));
 		} catch (Exception err) {
 			Log.e(TAG, "clockIntent", err);
 		}
 		
 		return views;
 	}
-
-	//private LinearLayout ll;
+	
 	private WebView wv;
 	
 	@SuppressLint("SetJavaScriptEnabled")
 	private void checkTre() {
-		WindowManager wm = (WindowManager) getSystemService(WINDOW_SERVICE);
-		
-		WindowManager.LayoutParams lp = new WindowManager.LayoutParams(WindowManager.LayoutParams.WRAP_CONTENT,
-			WindowManager.LayoutParams.WRAP_CONTENT, WindowManager.LayoutParams.TYPE_PHONE,
-			WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE, PixelFormat.TRANSLUCENT);
-		lp.gravity = Gravity.CENTER;
-		lp.x = 0;
-		lp.y = 0;
-		lp.width = 200;
-		lp.height = 200;
-
-		//LinearLayout ll = new LinearLayout(this);
-		/*
-		ll = new LinearLayout(this);
-		ll.setLayoutParams(new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT,
-			RelativeLayout.LayoutParams.MATCH_PARENT));
-		*/
-
-		//final WebView wv = new WebView(this);
-		wv = new WebView(this);
-		
-		wm.addView(wv, lp);
-		
-		/*
-		wv.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,
-			LinearLayout.LayoutParams.MATCH_PARENT));
-		ll.addView(wv);
-		*/
-		wv.getSettings().setJavaScriptEnabled(true);
-		wv.addJavascriptInterface(new JSCheck3(wm), "HTMLOUT");
-		wv.setWebChromeClient(new WebChromeClient());
-		wv.setWebViewClient(new WebViewClient() {
-			@Override
-			public void onPageFinished(WebView view, String url) {
-				wv.loadUrl("javascript:window.HTMLOUT.processHTML(document.getElementsByTagName('html')[0].innerHTML);");
-			}
-		});
-		
-		wv.loadUrl("http://ac3.tre.it/133/costi-e-soglie.jsp");
-
-		//wm.addView(ll, lp);
+		Log.v(TAG, "checkTre");
+		if (wv == null) {
+			WindowManager wm = (WindowManager) getSystemService(WINDOW_SERVICE);
+			WindowManager.LayoutParams lp = new WindowManager.LayoutParams(WindowManager.LayoutParams.WRAP_CONTENT,
+				WindowManager.LayoutParams.WRAP_CONTENT, WindowManager.LayoutParams.TYPE_PHONE,
+				WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE | WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED,
+				PixelFormat.TRANSLUCENT);
+			lp.gravity = Gravity.TOP | Gravity.START;
+			lp.x = 0;
+			lp.y = 0;
+			lp.width = 200;
+			lp.height = 200;
+			wv = new WebView(getApplicationContext());
+			wv.getSettings().setJavaScriptEnabled(true);
+			wv.addJavascriptInterface(new JSCheck3(), "HTMLOUT");
+			wv.setWebChromeClient(new WebChromeClient());
+			wv.setWebViewClient(new WebViewClient() {
+				@Override
+				public void onPageFinished(WebView view, String url) {
+					Log.v(TAG, "onPageFinished");
+					time3 = System.currentTimeMillis();
+					running3 = false;
+					wv.loadUrl("javascript:window.HTMLOUT.processHTML(document.getElementsByTagName('html')[0].innerHTML);");
+				}
+			});
+			wm.addView(wv, lp);
+		}
+		running3 = true;
+		//wv.loadUrl("http://ac3.tre.it/133/costi-e-soglie.jsp");
+		wv.loadUrl("http://www.york.ac.uk/teaching/cws/wws/webpage1.html");
 	}
 	
 	class JSCheck3 {
-		private WindowManager wm;
-		//private View rv;
-		public JSCheck3(WindowManager wm) {
-			this.wm = wm;
-			//this.rv = rv;
-		}
 		@JavascriptInterface
 		public void processHTML(String html) {
 			if (TextUtils.isEmpty(html))
 				return;
-			Log.v(TAG, "checking page...");
+			Log.v(TAG, "processHTML");
 			try {
 				Document doc = Jsoup.parse(html);
 				Elements lst = doc.getElementsByClass("box_Credito");
@@ -215,16 +212,6 @@ public class OAService extends IntentService implements OnSharedPreferenceChange
 				traffico = traffico.substring(traffico.lastIndexOf(" ") + 1); // formato ok: "9,99GB"
 				Log.v(TAG, "traffico: " + traffico);
 				session.setLast3traf(traffico);
-
-				//wm.removeView(rv);
-				/*
-				wm.removeView(ll);
-				ll = null;
-				*/
-
-				wm.removeView(wv);
-				wv = null;
-				
 			} catch (Exception err) {
 				session.setLast3fail(err.getLocalizedMessage());
 				Log.e(TAG, "processHTML", err);

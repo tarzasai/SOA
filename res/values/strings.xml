@@ -5,6 +5,7 @@
     <string name="action_reset">Reset data</string>
     <string name="action_settings">Settings</string>
     <string name="settings_title">Settings</string>
+    <string name="shortcut_name">Clear Cache Shortcut</string>
     <string name="pd_dayset_title">Week hours</string>
     <string name="pd_dayset_summ">How many work hours per weekday</string>
     <string name="pd_wifiset_title">Office WiFi</string>
@@ -37,12 +38,11 @@
     <string name="test_day">mercoledì</string>
     <string name="test_wifi">ds9h0dvndsavad</string>
     <string name="test_boh">n/a</string>
-    <string name="test_3data">22.06€ / 1,56GB</string>
+    <string name="test_tre">22.06€ / 1,56GB</string>
     <string name="test_voldn">volume -</string>
     <string name="test_volup">volume +</string>
     <string name="test_cache">cache</string>
     <string name="add_widget">Add widget</string>
     <string name="title_activity_tre">TreActivity</string>
-    <string name="hello_world">Hello world!</string>
 
 </resources>

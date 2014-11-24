@@ -15,14 +15,16 @@ import android.net.Uri;
 import android.net.wifi.ScanResult;
 import android.net.wifi.WifiManager;
 import android.support.v4.app.NotificationCompat;
+import android.text.TextUtils;
 import android.text.format.DateUtils;
 import android.util.Log;
 import android.widget.Toast;
 
 public class OAReceiver extends BroadcastReceiver {
-	public static final String REQ_CC = "net.esorciccio.soa.REQUEST_CLEAR_CACHE";
+	public static final String REQ_CC = "net.esorciccio.soa.REQUEST_CACHE_CLEAR";
 	public static final String REQ_VD = "net.esorciccio.soa.REQUEST_VOLUME_DOWN";
 	public static final String REQ_VU = "net.esorciccio.soa.REQUEST_VOLUME_UP";
+	public static final String REQ_E3 = "net.esorciccio.soa.REQUEST_DIALOG_TRE";
 	
 	private static final int NOTIF_LEAVE = 1;
 	private static final int NOTIF_BLUNC = 2;
@@ -79,6 +81,13 @@ public class OAReceiver extends BroadcastReceiver {
 			audioMan(context).adjustStreamVolume(AudioManager.STREAM_MUSIC, AudioManager.ADJUST_RAISE, VFLAGS);
 		} else if (act.equals(REQ_VD)) {
 			audioMan(context).adjustStreamVolume(AudioManager.STREAM_MUSIC, AudioManager.ADJUST_LOWER, VFLAGS);
+		} else if (act.equals(REQ_E3)) {
+			String info = DateUtils.getRelativeTimeSpanString(session.getLast3time(), System.currentTimeMillis(),
+				DateUtils.MINUTE_IN_MILLIS).toString();
+			String err = session.getLast3fail();
+			if (TextUtils.isEmpty(err))
+				err = "ok";
+			Toast.makeText(context, info + ": " + err, Toast.LENGTH_SHORT).show();
 		}
 	}
 	

@@ -243,11 +243,19 @@ public class OASession implements OnSharedPreferenceChangeListener {
 		editor.commit();
 	}
 	
+	public long getLast3time() {
+		return prefs.getLong(PK.L3TIM, 0);
+	}
+	
 	public void setLast3fail(String error) {
 		Log.v(getClass().getSimpleName(), "setLast3fail");
 		SharedPreferences.Editor editor = prefs.edit();
 		editor.putString(PK.L3ERR, error);
 		editor.commit();
+	}
+	
+	public String getLast3fail() {
+		return prefs.getString(PK.L3ERR, "");
 	}
 	
 	public void setLast3cred(String credito) {

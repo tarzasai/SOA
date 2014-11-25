@@ -123,7 +123,7 @@ public class OAService extends IntentService implements OnSharedPreferenceChange
 		views.setTextViewText(R.id.txt_clock, OASession.timeString(System.currentTimeMillis()));
 		
 		views.setTextViewText(R.id.txt_today, OASession.dateString(System.currentTimeMillis(), "EEE d MMM"));
-
+		
 		@SuppressWarnings("deprecation")
 		String alarm = Settings.System.getString(context.getContentResolver(), Settings.System.NEXT_ALARM_FORMATTED);
 		views.setTextViewText(R.id.txt_alarm, !TextUtils.isEmpty(alarm) ? alarm : "nessuna");
@@ -136,10 +136,10 @@ public class OAService extends IntentService implements OnSharedPreferenceChange
 		views.setOnClickPendingIntent(R.id.txt_tre, PendingIntent.getBroadcast(context, 0,
 			new Intent(OAReceiver.REQ_E3), 0));
 		
-		views.setOnClickPendingIntent(R.id.btn_voldn, PendingIntent.getBroadcast(context, 0,
+		views.setOnClickPendingIntent(R.id.txt_voldn, PendingIntent.getBroadcast(context, 0,
 			new Intent(OAReceiver.REQ_VD), 0));
 		
-		views.setOnClickPendingIntent(R.id.btn_volup, PendingIntent.getBroadcast(context, 0,
+		views.setOnClickPendingIntent(R.id.txt_volup, PendingIntent.getBroadcast(context, 0,
 			new Intent(OAReceiver.REQ_VU), 0));
 		
 		views.setOnClickPendingIntent(R.id.frm_left, PendingIntent.getActivity(context, 0,
@@ -190,8 +190,8 @@ public class OAService extends IntentService implements OnSharedPreferenceChange
 			wm.addView(wv, lp);
 		}
 		running3 = true;
-		//wv.loadUrl("http://ac3.tre.it/133/costi-e-soglie.jsp");
-		wv.loadUrl("http://www.york.ac.uk/teaching/cws/wws/webpage1.html");
+		wv.loadUrl("http://ac3.tre.it/133/costi-e-soglie.jsp");
+		//wv.loadUrl("http://www.york.ac.uk/teaching/cws/wws/webpage1.html");
 	}
 	
 	class JSCheck3 {

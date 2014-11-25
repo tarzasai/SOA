@@ -89,13 +89,15 @@
             android:layout_height="1dp"
             android:layout_marginBottom="3dp"
             android:layout_marginTop="3dp"
-            android:background="@android:color/darker_gray" />
+            android:background="#6E6E6E" />
 
         <LinearLayout
             android:layout_width="fill_parent"
             android:layout_height="24dp"
+            android:divider="@drawable/divider_empty"
             android:gravity="center_vertical"
-            android:paddingRight="4dp" >
+            android:paddingRight="10dp"
+            android:showDividers="middle" >
 
             <TextView
                 android:id="@+id/txt_tre"
@@ -113,25 +115,21 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1" />
 
-            <Button
-                android:id="@+id/btn_voldn"
-                style="?android:attr/buttonStyleSmall"
+            <TextView
+                android:id="@+id/txt_voldn"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="-4dp"
-                android:layout_marginTop="-4dp"
+                android:background="@drawable/simple_box_grey"
                 android:text="@string/test_voldn"
-                android:textSize="9sp" />
+                android:textColor="@android:color/black" />
 
-            <Button
-                android:id="@+id/btn_volup"
-                style="?android:attr/buttonStyleSmall"
+            <TextView
+                android:id="@+id/txt_volup"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="-4dp"
-                android:layout_marginTop="-4dp"
+                android:background="@drawable/simple_box_grey"
                 android:text="@string/test_volup"
-                android:textSize="9sp" />
+                android:textColor="@android:color/black" />
 
         </LinearLayout>
     </LinearLayout>

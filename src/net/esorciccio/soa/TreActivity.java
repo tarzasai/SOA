@@ -43,27 +43,30 @@ public class TreActivity extends Activity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		
-		lastrun = System.currentTimeMillis();
-		running = true;
-		
-		wv = new WebView(this);
-		wv.getSettings().setJavaScriptEnabled(true);
-		wv.addJavascriptInterface(new JSCheck3(), "HTMLOUT");
-		wv.setWebChromeClient(new WebChromeClient());
-		wv.setWebViewClient(new WebViewClient() {
-			@Override
-			public void onPageFinished(WebView view, String url) {
-				wv.loadUrl("javascript:window.HTMLOUT.processHTML(document.getElementsByTagName('html')[0].innerHTML);");
-			}
-			@Override
-			public void onReceivedError(WebView view, int errorCode, String description, String failingUrl) {
-				errore = description;
-				lastrun = System.currentTimeMillis();
-				running = false;
-				finish();
-			}
-		});
-		wv.loadUrl("http://ac3.tre.it/133/costi-e-soglie.jsp");
+		if (!canRun())
+			finish();
+		else {
+			lastrun = System.currentTimeMillis();
+			running = true;
+			wv = new WebView(this);
+			wv.getSettings().setJavaScriptEnabled(true);
+			wv.addJavascriptInterface(new JSCheck3(), "HTMLOUT");
+			wv.setWebChromeClient(new WebChromeClient());
+			wv.setWebViewClient(new WebViewClient() {
+				@Override
+				public void onPageFinished(WebView view, String url) {
+					wv.loadUrl("javascript:window.HTMLOUT.processHTML(document.getElementsByTagName('html')[0].innerHTML);");
+				}
+				@Override
+				public void onReceivedError(WebView view, int errorCode, String description, String failingUrl) {
+					errore = description;
+					lastrun = System.currentTimeMillis();
+					running = false;
+					finish();
+				}
+			});
+			wv.loadUrl("http://ac3.tre.it/133/costi-e-soglie.jsp");
+		}
 	}
 	
 	@Override

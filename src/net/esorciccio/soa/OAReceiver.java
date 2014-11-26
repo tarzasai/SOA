@@ -15,7 +15,6 @@ import android.net.Uri;
 import android.net.wifi.ScanResult;
 import android.net.wifi.WifiManager;
 import android.support.v4.app.NotificationCompat;
-import android.text.TextUtils;
 import android.text.format.DateUtils;
 import android.util.Log;
 import android.widget.Toast;
@@ -82,12 +81,14 @@ public class OAReceiver extends BroadcastReceiver {
 		} else if (act.equals(REQ_VD)) {
 			audioMan(context).adjustStreamVolume(AudioManager.STREAM_MUSIC, AudioManager.ADJUST_LOWER, VFLAGS);
 		} else if (act.equals(REQ_E3)) {
-			String info = DateUtils.getRelativeTimeSpanString(session.getLast3time(), System.currentTimeMillis(),
+			String info = DateUtils.getRelativeTimeSpanString(TreActivity.lastrun, System.currentTimeMillis(),
 				DateUtils.MINUTE_IN_MILLIS).toString();
-			String err = session.getLast3fail();
-			if (TextUtils.isEmpty(err))
-				err = "ok";
-			Toast.makeText(context, info + ": " + err, Toast.LENGTH_SHORT).show();
+			if (!TreActivity.failed())
+				Toast.makeText(context, info + ": ok", Toast.LENGTH_SHORT).show();
+			else {
+				Toast.makeText(context, info + ": " + TreActivity.errore, Toast.LENGTH_LONG).show();
+				TreActivity.lastrun = 0;
+			}
 		}
 	}
 	

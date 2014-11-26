@@ -235,11 +235,15 @@ public class OASession implements OnSharedPreferenceChangeListener {
 		return cal.getTimeInMillis();
 	}
 	
-	public void setLast3time(long time) {
+	/*
+	public void setLast3time(long time, String error) {
 		Log.v(getClass().getSimpleName(), "setLast3time");
 		SharedPreferences.Editor editor = prefs.edit();
 		editor.putLong(PK.L3TIM, time);
-		editor.remove(PK.L3ERR);
+		if (!TextUtils.isEmpty(error))
+			editor.putString(PK.L3ERR, error);
+		else
+			editor.remove(PK.L3ERR);
 		editor.commit();
 	}
 	
@@ -247,30 +251,20 @@ public class OASession implements OnSharedPreferenceChangeListener {
 		return prefs.getLong(PK.L3TIM, 0);
 	}
 	
-	public void setLast3fail(String error) {
-		Log.v(getClass().getSimpleName(), "setLast3fail");
-		SharedPreferences.Editor editor = prefs.edit();
-		editor.putString(PK.L3ERR, error);
-		editor.commit();
-	}
-	
 	public String getLast3fail() {
 		return prefs.getString(PK.L3ERR, "");
 	}
 	
-	public void setLast3cred(String credito) {
-		Log.v(getClass().getSimpleName(), "setLast3cred");
+	public void setLast3data(String credito, String traffico) {
+		Log.v(getClass().getSimpleName(), "setLast3data");
 		SharedPreferences.Editor editor = prefs.edit();
 		editor.putString(PK.L3CRE, credito);
-		editor.commit();
-	}
-	
-	public void setLast3traf(String traffico) {
-		Log.v(getClass().getSimpleName(), "setLast3traf");
-		SharedPreferences.Editor editor = prefs.edit();
 		editor.putString(PK.L3TRA, traffico);
+		editor.putLong(PK.L3TIM, System.currentTimeMillis());
+		editor.remove(PK.L3ERR);
 		editor.commit();
 	}
+	*/
 	
 	private static PendingIntent mkPI(String action) {
 		return PendingIntent.getBroadcast(appContext, 0, new Intent(appContext, OAReceiver.class).setAction(action),

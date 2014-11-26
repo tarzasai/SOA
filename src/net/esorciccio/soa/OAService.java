@@ -1,49 +1,24 @@
 package net.esorciccio.soa;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.OutputStreamWriter;
-
-import net.esorciccio.soa.OASession.PK;
-
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-import org.jsoup.select.Elements;
-
-import android.annotation.SuppressLint;
 import android.app.IntentService;
 import android.app.PendingIntent;
 import android.appwidget.AppWidgetManager;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
-import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.content.pm.PackageManager;
-import android.graphics.PixelFormat;
-import android.os.Environment;
 import android.provider.Settings;
 import android.text.TextUtils;
 import android.util.Log;
-import android.view.Gravity;
-import android.view.WindowManager;
-import android.webkit.JavascriptInterface;
-import android.webkit.WebChromeClient;
-import android.webkit.WebView;
-import android.webkit.WebViewClient;
 import android.widget.RemoteViews;
 
-public class OAService extends IntentService implements OnSharedPreferenceChangeListener {
+public class OAService extends IntentService {
 	private static final String TAG = "OAService";
 	
 	private OASession session;
+	private ComponentName compName;
+	private Intent treIntent;
 	private boolean terminated = false;
-
-	private boolean running3 = false;
-	private boolean error3 = false;
-	private String credito = "n/a";
-	private String traffico = "n/a";
-	private Long time3 = Long.valueOf(0);
 	
 	public OAService() {
 		super("OAService");
@@ -60,27 +35,14 @@ public class OAService extends IntentService implements OnSharedPreferenceChange
 	protected void onHandleIntent(Intent intent) {
 		Log.v(TAG, "onHandleIntent");
 		session = OASession.getInstance(this);
-		session.getPrefs().registerOnSharedPreferenceChangeListener(this);
+		compName = new ComponentName(this, OAWidgetLarge.class);
+		treIntent = new Intent(getBaseContext(), TreActivity.class);
+		treIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 		try {
 			while (!terminated) {
-				if (!OASession.isOnWIFI(this) && (time3 <= 0 || (System.currentTimeMillis() - time3) > (30 * 60000))) {
-					
-					time3 = System.currentTimeMillis();
-					Intent tre = new Intent(getBaseContext(), TreActivity.class);
-					tre.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-					getApplication().startActivity(tre);
-					
-					/*
-					if (!running3)
-						checkTre();
-					*/
-					
-				}
-				error3 = !TextUtils.isEmpty(session.getPrefs().getString(PK.L3ERR, null));
-				credito = session.getPrefs().getString(PK.L3CRE, null);
-				traffico = session.getPrefs().getString(PK.L3TRA, null);
-				AppWidgetManager.getInstance(this).updateAppWidget(new ComponentName(this, OAWidgetLarge.class),
-					buildUpdate(this));
+				AppWidgetManager.getInstance(this).updateAppWidget(compName, buildUpdate(this));
+				if (TreActivity.canRun() && !OASession.isOnWIFI(this))
+					getApplication().startActivity(treIntent);
 				try {
 					Thread.sleep(1500);
 				} catch (InterruptedException e) {
@@ -88,7 +50,6 @@ public class OAService extends IntentService implements OnSharedPreferenceChange
 				}
 			}
 		} finally {
-			session.getPrefs().unregisterOnSharedPreferenceChangeListener(this);
 			stopSelf();
 		}
 	}
@@ -97,20 +58,12 @@ public class OAService extends IntentService implements OnSharedPreferenceChange
 	public void onDestroy() {
 		super.onDestroy();
 		
+		/*
 		if (wv != null) {
 			WindowManager wm = (WindowManager) getSystemService(WINDOW_SERVICE);
 			wm.removeView(wv);
 		}
-	}
-	
-	@Override
-	public void onSharedPreferenceChanged(SharedPreferences prefs, String key) {
-		Log.v(TAG, "onSharedPreferenceChanged (" + key + ")");
-		/*
-		 * if (key.equals(PK.L3TIM)) last3time = prefs.getLong(PK.L3TIM, 0); else if (key.equals(PK.L3CRE)) credito =
-		 * prefs.getString(PK.L3CRE, null); else if (key.equals(PK.L3TRA)) traffico = prefs.getString(PK.L3TRA, null);
-		 * else if (key.equals(PK.L3ERR)) error3 = !TextUtils.isEmpty(prefs.getString(PK.L3ERR, null));
-		 */
+		*/
 	}
 	
 	private RemoteViews buildUpdate(Context context) {
@@ -128,10 +81,10 @@ public class OAService extends IntentService implements OnSharedPreferenceChange
 		String alarm = Settings.System.getString(context.getContentResolver(), Settings.System.NEXT_ALARM_FORMATTED);
 		views.setTextViewText(R.id.txt_alarm, !TextUtils.isEmpty(alarm) ? alarm : "nessuna");
 		
-		views.setTextViewText(R.id.txt_tre, credito + " / " + traffico);
+		views.setTextViewText(R.id.txt_tre, TreActivity.credito + " / " + TreActivity.traffico);
 		
-		views.setTextViewCompoundDrawables(R.id.txt_tre, R.drawable.ic_action_h3g, 0, error3 ?
-			R.drawable.ic_action_error : 0, 0);
+		views.setTextViewCompoundDrawables(R.id.txt_tre, R.drawable.ic_action_h3g, 0,
+			TreActivity.failed() ? R.drawable.ic_action_error : 0, 0);
 		
 		views.setOnClickPendingIntent(R.id.txt_tre, PendingIntent.getBroadcast(context, 0,
 			new Intent(OAReceiver.REQ_E3), 0));
@@ -158,6 +111,7 @@ public class OAService extends IntentService implements OnSharedPreferenceChange
 		return views;
 	}
 	
+	/*
 	private WebView wv;
 	
 	@SuppressLint("SetJavaScriptEnabled")
@@ -191,7 +145,6 @@ public class OAService extends IntentService implements OnSharedPreferenceChange
 		}
 		running3 = true;
 		wv.loadUrl("http://ac3.tre.it/133/costi-e-soglie.jsp");
-		//wv.loadUrl("http://www.york.ac.uk/teaching/cws/wws/webpage1.html");
 	}
 	
 	class JSCheck3 {
@@ -233,4 +186,5 @@ public class OAService extends IntentService implements OnSharedPreferenceChange
 			}
 		}
 	}
+	*/
 }

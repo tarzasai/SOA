@@ -15,57 +15,84 @@ import android.os.Environment;
 import android.text.TextUtils;
 import android.util.Log;
 import android.webkit.JavascriptInterface;
+import android.webkit.WebChromeClient;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
 public class TreActivity extends Activity {
 	private static final String TAG = "TreActivity";
 	
-	private OASession session;
 	private WebView wv;
+
+	public static long lastrun = 0;
+	public static boolean running = false;
+	public static String errore = null;
+	public static String credito = null;
+	public static String traffico = null;
+	
+	public static boolean failed() {
+		return !TextUtils.isEmpty(errore);
+	}
+	
+	public static boolean canRun() {
+		return !failed() && !running && (lastrun <= 0 || ((System.currentTimeMillis() - lastrun) > (30 * 60000)));
+	}
 	
 	@SuppressLint("SetJavaScriptEnabled")
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		
-		session = OASession.getInstance(this);
-		session.setLast3time(System.currentTimeMillis());
+		lastrun = System.currentTimeMillis();
+		running = true;
 		
 		wv = new WebView(this);
 		wv.getSettings().setJavaScriptEnabled(true);
 		wv.addJavascriptInterface(new JSCheck3(), "HTMLOUT");
-		//wv.setWebChromeClient(new WebChromeClient());
+		wv.setWebChromeClient(new WebChromeClient());
 		wv.setWebViewClient(new WebViewClient() {
 			@Override
 			public void onPageFinished(WebView view, String url) {
 				wv.loadUrl("javascript:window.HTMLOUT.processHTML(document.getElementsByTagName('html')[0].innerHTML);");
 			}
+			@Override
+			public void onReceivedError(WebView view, int errorCode, String description, String failingUrl) {
+				errore = description;
+				lastrun = System.currentTimeMillis();
+				running = false;
+				finish();
+			}
 		});
 		wv.loadUrl("http://ac3.tre.it/133/costi-e-soglie.jsp");
+	}
+	
+	@Override
+	protected void onDestroy() {
+		super.onDestroy();
+		
+		running = false;
 	}
 	
 	class JSCheck3 {
 		@JavascriptInterface
 		public void processHTML(String html) {
-			if (TextUtils.isEmpty(html))
-				return;
-			Log.v(TAG, "checking page...");
 			try {
 				Document doc = Jsoup.parse(html);
 				Elements lst = doc.getElementsByClass("box_Credito");
-				String credito = lst.first().child(0).child(0).child(0).text().replace(" ", ""); // formato ok: "999.99€"
-				session.setLast3cred(credito);
+				credito = lst.first().child(0).child(0).child(0).text().replace(" ", ""); // 999.99€
 				lst = doc.getElementsByClass("box_Note");
-				String traffico = lst.first().text();
-				traffico = traffico.substring(0, traffico.indexOf("GB ") + 2);
-				traffico = traffico.substring(traffico.lastIndexOf(" ") + 1); // formato ok: "9,99GB"
-				session.setLast3traf(traffico);
-				finish(); // dismiss the activity
+				String tmp = lst.first().text();
+				tmp = tmp.substring(0, tmp.indexOf("GB ") + 2);
+				traffico = tmp.substring(tmp.lastIndexOf(" ") + 1); // 9,99GB
+				errore = null;
 			} catch (Exception err) {
-				session.setLast3fail(err.getLocalizedMessage());
 				Log.e(TAG, "processHTML", err);
+				errore = err.getLocalizedMessage();
 				savePage(html);
+			} finally {
+				lastrun = System.currentTimeMillis();
+				running = false;
+				finish();
 			}
 		}
 		public void savePage(String html) {

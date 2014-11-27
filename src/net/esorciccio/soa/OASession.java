@@ -17,10 +17,10 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
-import android.graphics.Typeface;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.preference.PreferenceManager;
+import android.text.TextUtils;
 import android.text.format.DateUtils;
 import android.util.Log;
 
@@ -42,7 +42,6 @@ public class OASession implements OnSharedPreferenceChangeListener {
 		public static final String LUNCH = "pk_lunch";
 		public static final String BLUNC = "pk_lstart";
 		public static final String ELUNC = "pk_lstop";
-		public static final String L3TIM = "last_3_time";
 		public static final String L3CRE = "last_3_cred";
 		public static final String L3TRA = "last_3_traf";
 		public static final String L3ERR = "last_3_fail";
@@ -56,16 +55,9 @@ public class OASession implements OnSharedPreferenceChangeListener {
 			singleton = new OASession(context);
 		return singleton;
 	}
-	
-	public static boolean isOnWIFI(Context context) {
-		ConnectivityManager cm = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
-		NetworkInfo ni = cm.getActiveNetworkInfo();
-		return ni != null && ni.isConnectedOrConnecting() && ni.getType() == ConnectivityManager.TYPE_WIFI;
-	}
 
 	private final String[] daynames;
 	private final SharedPreferences prefs;
-	private final Typeface fontClock;
 	
 	public OASession(Context context) {
 		appContext = context.getApplicationContext();
@@ -74,16 +66,16 @@ public class OASession implements OnSharedPreferenceChangeListener {
 		
 		prefs = PreferenceManager.getDefaultSharedPreferences(appContext);
 		prefs.registerOnSharedPreferenceChangeListener(this);
-
-		fontClock = Typeface.createFromAsset(context.getAssets(), "fonts/Sansation Bold.ttf");
 	}
 	
 	public SharedPreferences getPrefs() {
 		return prefs;
 	}
 	
-	public Typeface getFontClock() {
-		return fontClock;
+	public boolean isOnWIFI() {
+		ConnectivityManager cm = (ConnectivityManager) appContext.getSystemService(Context.CONNECTIVITY_SERVICE);
+		NetworkInfo ni = cm.getActiveNetworkInfo();
+		return ni != null && ni.isConnectedOrConnecting() && ni.getType() == ConnectivityManager.TYPE_WIFI;
 	}
 	
 	public String getDayName() {
@@ -235,36 +227,42 @@ public class OASession implements OnSharedPreferenceChangeListener {
 		return cal.getTimeInMillis();
 	}
 	
-	/*
-	public void setLast3time(long time, String error) {
-		Log.v(getClass().getSimpleName(), "setLast3time");
+	public void setLast3data(String credito, String traffico) {
+		Log.v(getClass().getSimpleName(), "setLast3data");
 		SharedPreferences.Editor editor = prefs.edit();
-		editor.putLong(PK.L3TIM, time);
-		if (!TextUtils.isEmpty(error))
-			editor.putString(PK.L3ERR, error);
-		else
-			editor.remove(PK.L3ERR);
+		editor.remove(PK.L3ERR);
+		editor.putString(PK.L3CRE, credito);
+		editor.putString(PK.L3TRA, traffico);
 		editor.commit();
 	}
 	
-	public long getLast3time() {
-		return prefs.getLong(PK.L3TIM, 0);
+	public String getLast3cred() {
+		return prefs.getString(PK.L3CRE, "n/a");
+	}
+	
+	public String getLast3traf() {
+		return prefs.getString(PK.L3TRA, "n/a");
+	}
+	
+	public void setLast3fail(String error) {
+		Log.v(getClass().getSimpleName(), "setLast3fail");
+		SharedPreferences.Editor editor = prefs.edit();
+		editor.putString(PK.L3ERR, error);
+		editor.commit();
 	}
 	
 	public String getLast3fail() {
 		return prefs.getString(PK.L3ERR, "");
 	}
 	
-	public void setLast3data(String credito, String traffico) {
-		Log.v(getClass().getSimpleName(), "setLast3data");
-		SharedPreferences.Editor editor = prefs.edit();
-		editor.putString(PK.L3CRE, credito);
-		editor.putString(PK.L3TRA, traffico);
-		editor.putLong(PK.L3TIM, System.currentTimeMillis());
-		editor.remove(PK.L3ERR);
-		editor.commit();
+	public boolean isLast3failed() {
+		return !TextUtils.isEmpty(getLast3fail());
 	}
-	*/
+	
+	public boolean canTreCheck() {
+		return !TreActivity.running && !isOnWIFI() && (TreActivity.lastrun <= 0 ||
+			((System.currentTimeMillis() - TreActivity.lastrun) > (30 * 60000)));
+	}
 	
 	private static PendingIntent mkPI(String action) {
 		return PendingIntent.getBroadcast(appContext, 0, new Intent(appContext, OAReceiver.class).setAction(action),

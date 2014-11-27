@@ -41,7 +41,7 @@ public class OAService extends IntentService {
 		try {
 			while (!terminated) {
 				AppWidgetManager.getInstance(this).updateAppWidget(compName, buildUpdate(this));
-				if (TreActivity.canRun() && !OASession.isOnWIFI(this))
+				if (session.canTreCheck())
 					getApplication().startActivity(treIntent);
 				try {
 					Thread.sleep(1500);
@@ -81,10 +81,11 @@ public class OAService extends IntentService {
 		String alarm = Settings.System.getString(context.getContentResolver(), Settings.System.NEXT_ALARM_FORMATTED);
 		views.setTextViewText(R.id.txt_alarm, !TextUtils.isEmpty(alarm) ? alarm : "nessuna");
 		
-		views.setTextViewText(R.id.txt_tre, TreActivity.credito + " / " + TreActivity.traffico);
+		views.setTextViewText(R.id.txt_tre, session.getLast3cred() + " / " + session.getLast3traf());
 		
 		views.setTextViewCompoundDrawables(R.id.txt_tre, R.drawable.ic_action_h3g, 0,
-			TreActivity.failed() ? R.drawable.ic_action_error : 0, 0);
+			(session.isLast3failed() ? R.drawable.ic_action_error :
+				(session.isOnWIFI() ? R.drawable.ic_action_wifi : 0)), 0);
 		
 		views.setOnClickPendingIntent(R.id.txt_tre, PendingIntent.getBroadcast(context, 0,
 			new Intent(OAReceiver.REQ_E3), 0));

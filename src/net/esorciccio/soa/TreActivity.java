@@ -12,7 +12,6 @@ import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.os.Bundle;
 import android.os.Environment;
-import android.text.TextUtils;
 import android.util.Log;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebChromeClient;
@@ -22,28 +21,20 @@ import android.webkit.WebViewClient;
 public class TreActivity extends Activity {
 	private static final String TAG = "TreActivity";
 	
+	private OASession session;
 	private WebView wv;
 
 	public static long lastrun = 0;
 	public static boolean running = false;
-	public static String errore = null;
-	public static String credito = null;
-	public static String traffico = null;
-	
-	public static boolean failed() {
-		return !TextUtils.isEmpty(errore);
-	}
-	
-	public static boolean canRun() {
-		return !failed() && !running && (lastrun <= 0 || ((System.currentTimeMillis() - lastrun) > (30 * 60000)));
-	}
 	
 	@SuppressLint("SetJavaScriptEnabled")
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		
-		if (!canRun())
+		session = OASession.getInstance(this);
+		
+		if (!session.canTreCheck())
 			finish();
 		else {
 			lastrun = System.currentTimeMillis();
@@ -59,7 +50,7 @@ public class TreActivity extends Activity {
 				}
 				@Override
 				public void onReceivedError(WebView view, int errorCode, String description, String failingUrl) {
-					errore = description;
+					session.setLast3fail(description);
 					lastrun = System.currentTimeMillis();
 					running = false;
 					finish();
@@ -82,15 +73,15 @@ public class TreActivity extends Activity {
 			try {
 				Document doc = Jsoup.parse(html);
 				Elements lst = doc.getElementsByClass("box_Credito");
-				credito = lst.first().child(0).child(0).child(0).text().replace(" ", ""); // 999.99€
+				String credito = lst.first().child(0).child(0).child(0).text().replace(" ", ""); // 999.99€
 				lst = doc.getElementsByClass("box_Note");
-				String tmp = lst.first().text();
-				tmp = tmp.substring(0, tmp.indexOf("GB ") + 2);
-				traffico = tmp.substring(tmp.lastIndexOf(" ") + 1); // 9,99GB
-				errore = null;
+				String traffico = lst.first().text();
+				traffico = traffico.substring(0, traffico.indexOf("GB ") + 2);
+				traffico = traffico.substring(traffico.lastIndexOf(" ") + 1); // 9,99GB
+				session.setLast3data(credito, traffico);
 			} catch (Exception err) {
 				Log.e(TAG, "processHTML", err);
-				errore = err.getLocalizedMessage();
+				session.setLast3fail(err.getLocalizedMessage());
 				savePage(html);
 			} finally {
 				lastrun = System.currentTimeMillis();

@@ -83,10 +83,10 @@ public class OAReceiver extends BroadcastReceiver {
 		} else if (act.equals(REQ_E3)) {
 			String info = DateUtils.getRelativeTimeSpanString(TreActivity.lastrun, System.currentTimeMillis(),
 				DateUtils.MINUTE_IN_MILLIS).toString();
-			if (!TreActivity.failed())
+			if (!session.isLast3failed())
 				Toast.makeText(context, info + ": ok", Toast.LENGTH_SHORT).show();
 			else {
-				Toast.makeText(context, info + ": " + TreActivity.errore, Toast.LENGTH_LONG).show();
+				Toast.makeText(context, info + ": " + session.getLast3fail(), Toast.LENGTH_LONG).show();
 				TreActivity.lastrun = 0;
 			}
 		}

@@ -20,6 +20,7 @@ import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.preference.PreferenceManager;
+import android.telephony.TelephonyManager;
 import android.text.TextUtils;
 import android.text.format.DateUtils;
 import android.util.Log;
@@ -55,6 +56,10 @@ public class OASession implements OnSharedPreferenceChangeListener {
 			singleton = new OASession(context);
 		return singleton;
 	}
+	
+	public static boolean isOnWIFI = false;
+	public static boolean isOn3G = false;
+	public static boolean isRoaming = false;
 
 	private final String[] daynames;
 	private final SharedPreferences prefs;
@@ -70,12 +75,6 @@ public class OASession implements OnSharedPreferenceChangeListener {
 	
 	public SharedPreferences getPrefs() {
 		return prefs;
-	}
-	
-	public boolean isOnWIFI() {
-		ConnectivityManager cm = (ConnectivityManager) appContext.getSystemService(Context.CONNECTIVITY_SERVICE);
-		NetworkInfo ni = cm.getActiveNetworkInfo();
-		return ni != null && ni.isConnectedOrConnecting() && ni.getType() == ConnectivityManager.TYPE_WIFI;
 	}
 	
 	public String getDayName() {
@@ -260,7 +259,8 @@ public class OASession implements OnSharedPreferenceChangeListener {
 	}
 	
 	public boolean canTreCheck() {
-		return !TreActivity.running && !isOnWIFI() && (TreActivity.lastrun <= 0 ||
+		//return !TreActivity.running && isOn3G() && !isRoaming() && (TreActivity.lastrun <= 0 ||
+		return !TreActivity.running && isOn3G && !isRoaming && (TreActivity.lastrun <= 0 ||
 			((System.currentTimeMillis() - TreActivity.lastrun) > (30 * 60000)));
 	}
 	
@@ -306,6 +306,16 @@ public class OASession implements OnSharedPreferenceChangeListener {
 				Log.v(getClass().getSimpleName(), "lunch end alarm set to " + timeString(et));
 			}
 		}
+	}
+	
+	public void checkNetwork() {
+		ConnectivityManager cm = (ConnectivityManager) appContext.getSystemService(Context.CONNECTIVITY_SERVICE);
+		NetworkInfo ni = cm.getActiveNetworkInfo();
+		int ns = (ni != null && ni.isConnected()) ? ni.getType() : ConnectivityManager.TYPE_DUMMY;
+		isOnWIFI = ns == ConnectivityManager.TYPE_WIFI;
+		isOn3G = ns == ConnectivityManager.TYPE_MOBILE;
+		TelephonyManager tm = (TelephonyManager) appContext.getSystemService(Context.TELEPHONY_SERVICE);
+		isRoaming = (tm != null && tm.isNetworkRoaming());
 	}
 	
 	public void updateWidget() {

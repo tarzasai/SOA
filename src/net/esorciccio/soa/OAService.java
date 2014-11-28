@@ -35,6 +35,8 @@ public class OAService extends IntentService {
 	protected void onHandleIntent(Intent intent) {
 		Log.v(TAG, "onHandleIntent");
 		session = OASession.getInstance(this);
+		session.checkAlarms();
+		session.checkNetwork();
 		compName = new ComponentName(this, OAWidgetLarge.class);
 		treIntent = new Intent(getBaseContext(), TreActivity.class);
 		treIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
@@ -81,11 +83,20 @@ public class OAService extends IntentService {
 		String alarm = Settings.System.getString(context.getContentResolver(), Settings.System.NEXT_ALARM_FORMATTED);
 		views.setTextViewText(R.id.txt_alarm, !TextUtils.isEmpty(alarm) ? alarm : "nessuna");
 		
-		views.setTextViewText(R.id.txt_tre, session.getLast3cred() + " / " + session.getLast3traf());
+		int ci = 0;
+		if (TreActivity.running)
+			ci = R.drawable.ic_action_check;
+		else if (!OASession.isOn3G)
+			ci = R.drawable.ic_action_noconn;
+		else if (OASession.isRoaming)
+			ci = R.drawable.ic_action_roaming;
+		else if (OASession.isOnWIFI)
+			ci = R.drawable.ic_action_wifi;
+		else if (session.isLast3failed())
+			ci = R.drawable.ic_action_error;
 		
-		views.setTextViewCompoundDrawables(R.id.txt_tre, R.drawable.ic_action_h3g, 0,
-			(session.isLast3failed() ? R.drawable.ic_action_error :
-				(session.isOnWIFI() ? R.drawable.ic_action_wifi : 0)), 0);
+		views.setTextViewText(R.id.txt_tre, session.getLast3cred() + " / " + session.getLast3traf());
+		views.setTextViewCompoundDrawables(R.id.txt_tre, R.drawable.ic_action_h3g, 0, ci, 0);
 		
 		views.setOnClickPendingIntent(R.id.txt_tre, PendingIntent.getBroadcast(context, 0,
 			new Intent(OAReceiver.REQ_E3), 0));

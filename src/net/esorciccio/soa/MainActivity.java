@@ -33,6 +33,7 @@ public class MainActivity extends Activity implements OnSharedPreferenceChangeLi
 		
 		session = OASession.getInstance(this);
 		session.checkAlarms();
+		session.checkNetwork();
 		
 		txtArrival = (TextView) findViewById(R.id.txt_arrival);
 		txtLeaving = (TextView) findViewById(R.id.txt_leave);

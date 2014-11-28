@@ -43,6 +43,11 @@ public class OAReceiver extends BroadcastReceiver {
 		Log.v(getClass().getSimpleName(), act);
 		if (act.equals("android.intent.action.BOOT_COMPLETED")) {
 			session.checkAlarms();
+			session.checkNetwork();
+		} else if (act.equals("android.net.conn.CONNECTIVITY_CHANGE") ||
+			act.equals("android.net.wifi.WIFI_STATE_CHANGED") ||
+			act.equals("android.net.wifi.STATE_CHANGE")) {
+			session.checkNetwork();
 		} else if (act.equals("android.net.wifi.SCAN_RESULTS")) {
 			boolean res = false;
 			Set<String> ssids = session.getWifiSet();

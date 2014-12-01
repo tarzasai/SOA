@@ -6,12 +6,16 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 
 import android.app.AlarmManager;
 import android.app.PendingIntent;
 import android.appwidget.AppWidgetManager;
+import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothDevice;
+import android.bluetooth.BluetoothProfile;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -25,7 +29,7 @@ import android.text.TextUtils;
 import android.text.format.DateUtils;
 import android.util.Log;
 
-public class OASession implements OnSharedPreferenceChangeListener {
+public class OASession implements OnSharedPreferenceChangeListener, BluetoothProfile.ServiceListener {
 	
 	static class AC {
 		public static final String LEAVE = "net.esorciccio.soa.OASession.AC.LEAVE";
@@ -36,7 +40,9 @@ public class OASession implements OnSharedPreferenceChangeListener {
 	static class PK {
 		public static final String HOURS = "pk_hours";
 		public static final String WIFIS = "pk_wifis";
+		public static final String WIFIH = "pk_wifih";
 		public static final String ROUND = "pk_round";
+		public static final String BTDEV = "pk_btauto";
 		public static final String THERE = "pk_there";
 		public static final String ARRIV = "pk_arrival";
 		public static final String LEAVE = "pk_leaving";
@@ -60,7 +66,9 @@ public class OASession implements OnSharedPreferenceChangeListener {
 	public static boolean isOnWIFI = false;
 	public static boolean isOn3G = false;
 	public static boolean isRoaming = false;
-
+	public static boolean isBTEnabled = false;
+	public static boolean isBTConnected = false;
+	
 	private final String[] daynames;
 	private final SharedPreferences prefs;
 	
@@ -106,14 +114,14 @@ public class OASession implements OnSharedPreferenceChangeListener {
 		editor.commit();
 	}
 	
-	public Set<String> getWifiSet() {
-		return getPrefs().getStringSet(PK.WIFIS, new HashSet<String>());
+	public Set<String> getWifiSet(String wifiPref) {
+		return getPrefs().getStringSet(wifiPref, new HashSet<String>());
 	}
 	
-	public void setWifiSet(Set<String> ssids) {
+	public void setWifiSet(String wifiPref, Set<String> ssids) {
 		Log.v(getClass().getSimpleName(), "setWifiSet");
 		SharedPreferences.Editor editor = prefs.edit();
-		editor.putStringSet(PK.WIFIS, ssids);
+		editor.putStringSet(wifiPref, ssids);
 		editor.commit();
 	}
 	
@@ -200,6 +208,10 @@ public class OASession implements OnSharedPreferenceChangeListener {
 		return getPrefs().getBoolean(PK.ROUND, false);
 	}
 	
+	public String getBTACDevice() {
+		return getPrefs().getString(PK.BTDEV, "");
+	}
+	
 	public boolean getLunchAlerts() {
 		return getPrefs().getBoolean(PK.LUNCH, true);
 	}
@@ -259,9 +271,9 @@ public class OASession implements OnSharedPreferenceChangeListener {
 	}
 	
 	public boolean canTreCheck() {
-		//return !TreActivity.running && isOn3G() && !isRoaming() && (TreActivity.lastrun <= 0 ||
-		return !TreActivity.running && isOn3G && !isRoaming && (TreActivity.lastrun <= 0 ||
-			((System.currentTimeMillis() - TreActivity.lastrun) > (30 * 60000)));
+		// return !TreActivity.running && isOn3G() && !isRoaming() && (TreActivity.lastrun <= 0 ||
+		return !TreActivity.running && isOn3G && !isRoaming
+			&& (TreActivity.lastrun <= 0 || ((System.currentTimeMillis() - TreActivity.lastrun) > (30 * 60000)));
 	}
 	
 	private static PendingIntent mkPI(String action) {
@@ -318,17 +330,47 @@ public class OASession implements OnSharedPreferenceChangeListener {
 		isRoaming = (tm != null && tm.isNetworkRoaming());
 	}
 	
+	public void checkBluetooth() {
+		BluetoothAdapter ba = BluetoothAdapter.getDefaultAdapter();
+		if (ba == null) {
+			isBTEnabled = false;
+			isBTConnected = false;
+		} else {
+			isBTEnabled = ba.isEnabled();
+			if (!TextUtils.isEmpty(getBTACDevice()))
+				ba.getProfileProxy(appContext, this, BluetoothProfile.A2DP);
+		}
+	}
+	
 	public void updateWidget() {
 		appContext.sendBroadcast(new Intent(appContext, OAWidgetSmall.class).setAction(
 			AppWidgetManager.ACTION_APPWIDGET_UPDATE).putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS,
-			AppWidgetManager.getInstance(appContext).getAppWidgetIds(new ComponentName(appContext,
-			OAWidgetSmall.class))));
+				AppWidgetManager.getInstance(appContext).getAppWidgetIds(
+					new ComponentName(appContext, OAWidgetSmall.class))));
 	}
 	
 	@Override
 	public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
 		checkAlarms();
+		checkBluetooth();
 		updateWidget();
+	}
+	
+	@Override
+	public void onServiceConnected(int profile, BluetoothProfile proxy) {
+		List<BluetoothDevice> devices = proxy.getConnectedDevices();
+		if (devices != null)
+			for (BluetoothDevice bd: devices)
+				if (bd.getAddress().equals(getBTACDevice())) {
+					isBTConnected = true;
+					return;
+				}
+		isBTConnected = false;
+	}
+	
+	@Override
+	public void onServiceDisconnected(int profile) {
+		// nothing to do.
 	}
 	
 	public static String dateString(long time, String format) {

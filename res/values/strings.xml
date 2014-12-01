@@ -10,6 +10,10 @@
     <string name="pd_dayset_summ">How many work hours per weekday</string>
     <string name="pd_wifiset_title">Office WiFi</string>
     <string name="pd_wifiset_summ">WiFi hotspots to trigger events</string>
+    <string name="pd_wifibt_title">Home WiFi</string>
+    <string name="pd_wifibt_summ">WiFi hotspots to trigger events</string>
+    <string name="pd_btauto_title">Home BT Device</string>
+    <string name="pd_btauto_summ">Bluetooth device to connect at home</string>
     <string name="pk_round_title">Round at 5</string>
     <string name="pk_round_summ">Truncate at nearest 5 minutes</string>
     <string name="pc_lunch_title">Lunch alerts</string>
@@ -26,6 +30,7 @@
     <string name="dlg_btn_cancel">Cancel</string>
     <string name="msg_wifi_off">WiFi is currently disabled</string>
     <string name="msg_wifi_scan">Scanning for WiFi networks</string>
+    <string name="msg_bt_off">Bluetooth is currently disabled</string>
     <string name="msg_leave_title">Go home!</string>
     <string name="msg_leave_text">Time to go home: </string>
     <string name="msg_blunc_title">Go to lunch!</string>

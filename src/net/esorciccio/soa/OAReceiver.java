@@ -1,10 +1,17 @@
 package net.esorciccio.soa;
 
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.List;
 import java.util.Set;
 
+import net.esorciccio.soa.OASession.PK;
 import android.app.Notification;
 import android.app.NotificationManager;
+import android.bluetooth.BluetoothA2dp;
+import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothDevice;
+import android.bluetooth.BluetoothProfile;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -15,15 +22,13 @@ import android.net.Uri;
 import android.net.wifi.ScanResult;
 import android.net.wifi.WifiManager;
 import android.support.v4.app.NotificationCompat;
+import android.text.TextUtils;
 import android.text.format.DateUtils;
 import android.util.Log;
 import android.widget.Toast;
 
-public class OAReceiver extends BroadcastReceiver {
-	public static final String REQ_CC = "net.esorciccio.soa.REQUEST_CACHE_CLEAR";
-	public static final String REQ_VD = "net.esorciccio.soa.REQUEST_VOLUME_DOWN";
-	public static final String REQ_VU = "net.esorciccio.soa.REQUEST_VOLUME_UP";
-	public static final String REQ_E3 = "net.esorciccio.soa.REQUEST_DIALOG_TRE";
+public class OAReceiver extends BroadcastReceiver implements BluetoothProfile.ServiceListener {
+	private static final String TAG = "OAReceiver";
 	
 	private static final int NOTIF_LEAVE = 1;
 	private static final int NOTIF_BLUNC = 2;
@@ -31,32 +36,74 @@ public class OAReceiver extends BroadcastReceiver {
 	private static final Uri NOTIF_SOUND = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
 	private static final int VFLAGS = AudioManager.FLAG_PLAY_SOUND + AudioManager.FLAG_SHOW_UI;
 	
+	public static final String REQ_CC = "net.esorciccio.soa.REQUEST_CACHE_CLEAR";
+	public static final String REQ_VD = "net.esorciccio.soa.REQUEST_VOLUME_DOWN";
+	public static final String REQ_VU = "net.esorciccio.soa.REQUEST_VOLUME_UP";
+	public static final String REQ_E3 = "net.esorciccio.soa.REQUEST_DIALOG_TRE";
+	
 	private static AudioManager audioMan(Context context) {
 		return (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
 	}
 	
+	private static Notification getNotif(Context context, int title, int text) {
+		return getNotif(context, context.getString(title), context.getString(text));
+	}
+	
+	private static Notification getNotif(Context context, String title, String text) {
+		Toast.makeText(context, title, Toast.LENGTH_LONG).show();
+		return new NotificationCompat.Builder(context).setSound(NOTIF_SOUND).setSmallIcon(
+			R.drawable.notif_alarm).setContentTitle(title).setContentText(text).build();
+	}
+	
+	private OASession session;
+	private BluetoothDevice btDevice;
+	
 	@Override
 	public void onReceive(Context context, Intent intent) {
 		NotificationManager nm = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
-		OASession session = OASession.getInstance(context);
+		session = OASession.getInstance(context);
 		String act = intent.getAction();
 		Log.v(getClass().getSimpleName(), act);
 		if (act.equals("android.intent.action.BOOT_COMPLETED")) {
 			session.checkAlarms();
 			session.checkNetwork();
+			session.checkBluetooth();
 		} else if (act.equals("android.net.conn.CONNECTIVITY_CHANGE") ||
 			act.equals("android.net.wifi.WIFI_STATE_CHANGED") ||
 			act.equals("android.net.wifi.STATE_CHANGE")) {
 			session.checkNetwork();
+		} else if (act.equals("android.bluetooth.adapter.action.STATE_CHANGED")) {
+			int bton = intent.getIntExtra(BluetoothAdapter.EXTRA_STATE, BluetoothAdapter.ERROR);
+			OASession.isBTEnabled = bton == BluetoothAdapter.STATE_ON;
 		} else if (act.equals("android.net.wifi.SCAN_RESULTS")) {
+			List<ScanResult> wifis = ((WifiManager) context.getSystemService(Context.WIFI_SERVICE)).getScanResults();
+			Set<String> ssids;
 			boolean res = false;
-			Set<String> ssids = session.getWifiSet();
-			for (ScanResult sr : ((WifiManager) context.getSystemService(Context.WIFI_SERVICE)).getScanResults())
+			// office
+			ssids = session.getWifiSet(PK.WIFIS);
+			for (ScanResult sr : wifis)
 				if (ssids.contains(sr.SSID)) {
 					res = true;
 					break;
 				}
 			session.setInOffice(res);
+			// bluetooth
+			String btauto = session.getBTACDevice();
+			if (!TextUtils.isEmpty(btauto) && OASession.isBTEnabled && !OASession.isBTConnected) {
+				res = false;
+				ssids = session.getWifiSet(PK.WIFIH);
+				for (ScanResult sr : wifis)
+					if (ssids.contains(sr.SSID)) {
+						res = true;
+						break;
+					}
+				if (res) {
+					BluetoothAdapter ba = BluetoothAdapter.getDefaultAdapter();
+					btDevice = ba.getRemoteDevice(session.getBTACDevice());
+					Log.v(TAG, "Connecting bluetooth device " + btDevice.getName());
+					ba.getProfileProxy(context, this, BluetoothProfile.A2DP);
+				}
+			}
 		} else if (act.equals(OASession.AC.BLUNC)) {
 			nm.notify(NOTIF_BLUNC, getNotif(context, R.string.msg_blunc_title, R.string.msg_blunc_text));
 		} else if (act.equals(OASession.AC.ELUNC)) {
@@ -94,16 +141,30 @@ public class OAReceiver extends BroadcastReceiver {
 				Toast.makeText(context, info + ": " + session.getLast3fail(), Toast.LENGTH_LONG).show();
 				TreActivity.lastrun = 0;
 			}
+		} else if (act.equals("android.bluetooth.device.action.ACL_CONNECTED")) {
+	        OASession.isBTConnected = true;
+	    } else if (act.equals("android.bluetooth.device.action.ACL_DISCONNECTED")) {
+	    	OASession.isBTConnected = false;
+	    }
+	}
+	
+	@Override
+	public void onServiceConnected(int profile, BluetoothProfile proxy) {
+		try {
+			Method method = BluetoothA2dp.class.getDeclaredMethod("connect", BluetoothDevice.class);
+			method.setAccessible(true);
+			method.invoke((BluetoothA2dp) proxy, btDevice);
+		} catch (NoSuchMethodException ex) {
+			Log.e(TAG, "Unable to find connect(BluetoothDevice) method in BluetoothA2dp proxy.");
+		} catch (InvocationTargetException ex) {
+			Log.e(TAG, "Unable to invoke connect(BluetoothDevice) method on proxy. " + ex.toString());
+		} catch (IllegalAccessException ex) {
+			Log.e(TAG, "Illegal Access! " + ex.toString());
 		}
 	}
 	
-	private static Notification getNotif(Context context, int title, int text) {
-		return getNotif(context, context.getString(title), context.getString(text));
-	}
-	
-	private static Notification getNotif(Context context, String title, String text) {
-		Toast.makeText(context, title, Toast.LENGTH_LONG).show();
-		return new NotificationCompat.Builder(context).setSound(NOTIF_SOUND).setSmallIcon(
-			R.drawable.notif_alarm).setContentTitle(title).setContentText(text).build();
+	@Override
+	public void onServiceDisconnected(int profile) {
+		// nothing to do.
 	}
 }

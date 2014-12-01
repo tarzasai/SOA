@@ -5,7 +5,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import net.esorciccio.soa.R;
 import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -19,17 +18,19 @@ public class WifisetAdapter extends BaseAdapter {
 	
 	private final OASession session;
 	private final LayoutInflater inflater;
+	private final String wifiPref;
 	
 	private List<WifiSet> wifiset;
 	
-	public WifisetAdapter(Context context) {
+	public WifisetAdapter(Context context, String wifipref) {
 		super();
 		
 		session = OASession.getInstance(context);
 		inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+		wifiPref = wifipref;
 		
 		wifiset = new ArrayList<WifiSet>();
-		for (String s: session.getWifiSet())
+		for (String s: session.getWifiSet(wifiPref))
 			wifiset.add(WifiSet.create(s, true));
 	}
 	

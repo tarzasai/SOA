@@ -51,6 +51,7 @@ public class OASession implements OnSharedPreferenceChangeListener, BluetoothPro
 		public static final String ELUNC = "pk_lstop";
 		public static final String L3CRE = "last_3_cred";
 		public static final String L3TRA = "last_3_traf";
+		public static final String L3TIM = "last_3_time";
 		public static final String L3ERR = "last_3_fail";
 	}
 	
@@ -244,6 +245,14 @@ public class OASession implements OnSharedPreferenceChangeListener, BluetoothPro
 		editor.remove(PK.L3ERR);
 		editor.putString(PK.L3CRE, credito);
 		editor.putString(PK.L3TRA, traffico);
+		editor.putLong(PK.L3TIM, System.currentTimeMillis());
+		editor.commit();
+	}
+	
+	public void setLast3fail(String error) {
+		Log.v(getClass().getSimpleName(), "setLast3fail");
+		SharedPreferences.Editor editor = prefs.edit();
+		editor.putString(PK.L3ERR, error);
 		editor.commit();
 	}
 	
@@ -255,11 +264,8 @@ public class OASession implements OnSharedPreferenceChangeListener, BluetoothPro
 		return prefs.getString(PK.L3TRA, "n/a");
 	}
 	
-	public void setLast3fail(String error) {
-		Log.v(getClass().getSimpleName(), "setLast3fail");
-		SharedPreferences.Editor editor = prefs.edit();
-		editor.putString(PK.L3ERR, error);
-		editor.commit();
+	public long getLast3time() {
+		return prefs.getLong(PK.L3TIM, 0);
 	}
 	
 	public String getLast3fail() {

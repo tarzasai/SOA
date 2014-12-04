@@ -46,12 +46,10 @@ public class OAService extends IntentService {
 				AppWidgetManager.getInstance(this).updateAppWidget(compName, buildUpdate(this));
 				if (session.canTreCheck())
 					getApplication().startActivity(treIntent);
-				try {
-					Thread.sleep(1500);
-				} catch (InterruptedException e) {
-					terminated = true;
-				}
+				Thread.sleep(1500);
 			}
+		} catch (InterruptedException e) {
+			terminated = true;
 		} finally {
 			stopSelf();
 		}

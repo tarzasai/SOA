@@ -100,7 +100,6 @@ public class OAReceiver extends BroadcastReceiver implements BluetoothProfile.Se
 				if (res) {
 					BluetoothAdapter ba = BluetoothAdapter.getDefaultAdapter();
 					btDevice = ba.getRemoteDevice(session.getBTACDevice());
-					Log.v(TAG, "Connecting bluetooth device " + btDevice.getName());
 					ba.getProfileProxy(context, this, BluetoothProfile.A2DP);
 				}
 			}
@@ -133,14 +132,10 @@ public class OAReceiver extends BroadcastReceiver implements BluetoothProfile.Se
 		} else if (act.equals(REQ_VD)) {
 			audioMan(context).adjustStreamVolume(AudioManager.STREAM_MUSIC, AudioManager.ADJUST_LOWER, VFLAGS);
 		} else if (act.equals(REQ_E3)) {
-			String info = DateUtils.getRelativeTimeSpanString(session.getLast3time(), System.currentTimeMillis(),
-				DateUtils.MINUTE_IN_MILLIS).toString();
-			if (!session.isLast3failed())
-				Toast.makeText(context, info + ": ok", Toast.LENGTH_SHORT).show();
-			else {
-				Toast.makeText(context, info + ": " + session.getLast3fail(), Toast.LENGTH_LONG).show();
+			Toast.makeText(context, DateUtils.getRelativeTimeSpanString(session.getLast3time(),
+				System.currentTimeMillis(), DateUtils.MINUTE_IN_MILLIS).toString(), Toast.LENGTH_SHORT).show();
+			if (session.isLast3failed())
 				TreActivity.lastrun = 0;
-			}
 		} else if (act.equals("android.bluetooth.device.action.ACL_CONNECTED")) {
 	        OASession.isBTConnected = true;
 	    } else if (act.equals("android.bluetooth.device.action.ACL_DISCONNECTED")) {
@@ -150,6 +145,7 @@ public class OAReceiver extends BroadcastReceiver implements BluetoothProfile.Se
 	
 	@Override
 	public void onServiceConnected(int profile, BluetoothProfile proxy) {
+		Log.v(TAG, "Connecting bluetooth device " + btDevice.getName());
 		try {
 			Method method = BluetoothA2dp.class.getDeclaredMethod("connect", BluetoothDevice.class);
 			method.setAccessible(true);

@@ -242,10 +242,10 @@ public class OASession implements OnSharedPreferenceChangeListener, BluetoothPro
 	public void setLast3data(String credito, String traffico) {
 		Log.v(getClass().getSimpleName(), "setLast3data");
 		SharedPreferences.Editor editor = prefs.edit();
-		editor.remove(PK.L3ERR);
 		editor.putString(PK.L3CRE, credito);
 		editor.putString(PK.L3TRA, traffico);
 		editor.putLong(PK.L3TIM, System.currentTimeMillis());
+		editor.remove(PK.L3ERR);
 		editor.commit();
 	}
 	

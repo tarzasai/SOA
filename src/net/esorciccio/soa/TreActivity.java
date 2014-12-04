@@ -14,7 +14,6 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.util.Log;
 import android.webkit.JavascriptInterface;
-import android.webkit.WebChromeClient;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
@@ -42,7 +41,7 @@ public class TreActivity extends Activity {
 			wv = new WebView(this);
 			wv.getSettings().setJavaScriptEnabled(true);
 			wv.addJavascriptInterface(new JSCheck3(), "HTMLOUT");
-			wv.setWebChromeClient(new WebChromeClient());
+			//wv.setWebChromeClient(new WebChromeClient());
 			wv.setWebViewClient(new WebViewClient() {
 				@Override
 				public void onPageFinished(WebView view, String url) {

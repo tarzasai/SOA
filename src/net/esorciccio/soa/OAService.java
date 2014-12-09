@@ -7,6 +7,7 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.os.PowerManager;
 import android.provider.Settings;
 import android.text.TextUtils;
 import android.util.Log;
@@ -42,11 +43,16 @@ public class OAService extends IntentService {
 		treIntent = new Intent(getBaseContext(), TreActivity.class);
 		treIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 		try {
+			PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
 			while (!terminated) {
-				AppWidgetManager.getInstance(this).updateAppWidget(compName, buildUpdate(this));
-				if (session.canTreCheck())
-					getApplication().startActivity(treIntent);
-				Thread.sleep(1500);
+				if (pm.isPowerSaveMode() || !pm.isInteractive())
+					Thread.sleep(15000);
+				else {
+					AppWidgetManager.getInstance(this).updateAppWidget(compName, buildUpdate(this));
+					if (session.canTreCheck())
+						getApplication().startActivity(treIntent);
+					Thread.sleep(1500);
+				}
 			}
 		} catch (InterruptedException e) {
 			terminated = true;

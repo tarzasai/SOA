@@ -14,6 +14,7 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.util.Log;
 import android.webkit.JavascriptInterface;
+import android.webkit.WebChromeClient;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
@@ -40,8 +41,9 @@ public class TreActivity extends Activity {
 			running = true;
 			wv = new WebView(this);
 			wv.getSettings().setJavaScriptEnabled(true);
+			wv.getSettings().setUserAgentString("Mozilla/5.0 (Windows NT 5.1; rv:16.0) Gecko/20100101 Firefox/16.0");
 			wv.addJavascriptInterface(new JSCheck3(), "HTMLOUT");
-			//wv.setWebChromeClient(new WebChromeClient());
+			wv.setWebChromeClient(new WebChromeClient());
 			wv.setWebViewClient(new WebViewClient() {
 				@Override
 				public void onPageFinished(WebView view, String url) {
@@ -55,6 +57,11 @@ public class TreActivity extends Activity {
 					finish();
 				}
 			});
+			
+			/*
+			http://ac3.tre.it/133/profilo.jsp
+			*/
+			
 			wv.loadUrl("http://ac3.tre.it/133/costi-e-soglie.jsp");
 		}
 	}

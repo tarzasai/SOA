@@ -135,7 +135,7 @@ public class OAReceiver extends BroadcastReceiver implements BluetoothProfile.Se
 			Toast.makeText(context, DateUtils.getRelativeTimeSpanString(session.getLast3time(),
 				System.currentTimeMillis(), DateUtils.MINUTE_IN_MILLIS).toString(), Toast.LENGTH_SHORT).show();
 			if (session.isLast3failed())
-				TreActivity.lastrun = 0;
+				TreActivity.lastrun = -1;
 		} else if (act.equals("android.bluetooth.device.action.ACL_CONNECTED")) {
 	        OASession.isBTConnected = true;
 	    } else if (act.equals("android.bluetooth.device.action.ACL_DISCONNECTED")) {

@@ -277,9 +277,8 @@ public class OASession implements OnSharedPreferenceChangeListener, BluetoothPro
 	}
 	
 	public boolean canTreCheck() {
-		// return !TreActivity.running && isOn3G() && !isRoaming() && (TreActivity.lastrun <= 0 ||
-		return !TreActivity.running && isOn3G && !isRoaming
-			&& (TreActivity.lastrun <= 0 || ((System.currentTimeMillis() - TreActivity.lastrun) > (30 * 60000)));
+		return !TreActivity.running && isOn3G && !isRoaming && (!isLast3failed() || TreActivity.lastrun == -1) &&
+			(getLast3time() == 0 || ((System.currentTimeMillis() - getLast3time()) > (30 * 60000)));
 	}
 	
 	private static PendingIntent mkPI(String action) {

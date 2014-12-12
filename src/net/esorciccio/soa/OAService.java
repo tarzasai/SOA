@@ -7,6 +7,7 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.os.PowerManager;
 import android.provider.Settings;
 import android.text.TextUtils;
@@ -46,7 +47,7 @@ public class OAService extends IntentService {
 			PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
 			while (!terminated) {
 				if (pm.isPowerSaveMode() || !pm.isInteractive())
-					Thread.sleep(15000);
+					Thread.sleep(5000);
 				else {
 					AppWidgetManager.getInstance(this).updateAppWidget(compName, buildUpdate(this));
 					if (session.canTreCheck())
@@ -78,7 +79,18 @@ public class OAService extends IntentService {
 		
 		views.setTextViewText(R.id.txt_arrival, OASession.timeString(session.getArrival()));
 		
-		views.setTextViewText(R.id.txt_leaving, OASession.timeString(session.getLeaving()));
+		//views.setTextViewText(R.id.txt_leaving, OASession.timeString(session.getLeaving()));
+		long ttogo = session.getLeaving();
+		long tleft = session.getLeft();
+		if (tleft > 0 && tleft < ttogo) {
+			views.setTextColor(R.id.txt_leaving, Color.CYAN);
+			views.setTextViewText(R.id.txt_leaving, OASession.timeString(tleft));
+			views.setTextViewCompoundDrawables(R.id.txt_leaving, R.drawable.ic_action_av_fast_rewind, 0, 0, 0);
+		} else {
+			views.setTextColor(R.id.txt_leaving, Color.WHITE);
+			views.setTextViewText(R.id.txt_leaving, OASession.timeString(ttogo));
+			views.setTextViewCompoundDrawables(R.id.txt_leaving, R.drawable.ic_action_av_skip_previous, 0, 0, 0);
+		}
 		
 		views.setTextViewText(R.id.txt_clock, OASession.timeString(System.currentTimeMillis()));
 		

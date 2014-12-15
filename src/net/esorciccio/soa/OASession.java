@@ -264,21 +264,27 @@ public class OASession implements OnSharedPreferenceChangeListener, BluetoothPro
 		return prefs.getString(PK.L3TRA, "n/a");
 	}
 	
-	public long getLast3time() {
+	public long getLast3oktime() {
 		return prefs.getLong(PK.L3TIM, 0);
 	}
 	
-	public String getLast3fail() {
+	public String getLast3error() {
 		return prefs.getString(PK.L3ERR, "");
 	}
 	
 	public boolean isLast3failed() {
-		return !TextUtils.isEmpty(getLast3fail());
+		return !TextUtils.isEmpty(getLast3error());
 	}
 	
 	public boolean canTreCheck() {
-		return !TreActivity.running && isOn3G && !isRoaming && (!isLast3failed() || TreActivity.lastrun == -1) &&
-			(getLast3time() == 0 || ((System.currentTimeMillis() - getLast3time()) > (30 * 60000)));
+		if (TreActivity.running || !isOn3G || isRoaming)
+			return false;
+		long t = getLast3oktime();
+		if (t > 0)
+			t = System.currentTimeMillis() - t;
+		if (isLast3failed())
+			return TreActivity.lastrun <= 0 || (System.currentTimeMillis() - TreActivity.lastrun) > (15 * 60000);
+		return t > (30 * 60000);
 	}
 	
 	private static PendingIntent mkPI(String action) {

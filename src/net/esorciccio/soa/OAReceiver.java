@@ -132,7 +132,7 @@ public class OAReceiver extends BroadcastReceiver implements BluetoothProfile.Se
 		} else if (act.equals(REQ_VD)) {
 			audioMan(context).adjustStreamVolume(AudioManager.STREAM_MUSIC, AudioManager.ADJUST_LOWER, VFLAGS);
 		} else if (act.equals(REQ_E3)) {
-			Toast.makeText(context, DateUtils.getRelativeTimeSpanString(session.getLast3time(),
+			Toast.makeText(context, DateUtils.getRelativeTimeSpanString(session.getLast3oktime(),
 				System.currentTimeMillis(), DateUtils.MINUTE_IN_MILLIS).toString(), Toast.LENGTH_SHORT).show();
 			if (session.isLast3failed())
 				TreActivity.lastrun = -1;

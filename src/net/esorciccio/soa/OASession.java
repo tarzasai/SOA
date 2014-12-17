@@ -35,6 +35,7 @@ public class OASession implements OnSharedPreferenceChangeListener, BluetoothPro
 		public static final String LEAVE = "net.esorciccio.soa.OASession.AC.LEAVE";
 		public static final String BLUNC = "net.esorciccio.soa.OASession.AC.BLUNC";
 		public static final String ELUNC = "net.esorciccio.soa.OASession.AC.ELUNC";
+		public static final String CLEAN = "net.esorciccio.soa.OASession.AC.CLEAN";
 	}
 	
 	static class PK {
@@ -49,6 +50,7 @@ public class OASession implements OnSharedPreferenceChangeListener, BluetoothPro
 		public static final String LUNCH = "pk_lunch";
 		public static final String BLUNC = "pk_lstart";
 		public static final String ELUNC = "pk_lstop";
+		public static final String CLEAN = "pk_clean";
 		public static final String L3CRE = "last_3_cred";
 		public static final String L3TRA = "last_3_traf";
 		public static final String L3TIM = "last_3_time";
@@ -84,6 +86,10 @@ public class OASession implements OnSharedPreferenceChangeListener, BluetoothPro
 	
 	public SharedPreferences getPrefs() {
 		return prefs;
+	}
+	
+	public int getWeekDay() {
+		return Calendar.getInstance().get(Calendar.DAY_OF_WEEK);
 	}
 	
 	public String getDayName() {
@@ -133,20 +139,17 @@ public class OASession implements OnSharedPreferenceChangeListener, BluetoothPro
 	public void setInOffice(boolean value) {
 		if (value == getInOffice())
 			return;
-		
 		Log.v(getClass().getSimpleName(), "setInOffice");
 		SharedPreferences.Editor editor = prefs.edit();
 		editor.putBoolean(PK.THERE, value);
 		editor.commit();
-		
 		if (value) {
 			if (getArrival() <= 0)
 				setArrival(System.currentTimeMillis());
 			else
 				setLeft(0);
-		} else if (getArrival() > 0 && getLeft() <= 0) {
+		} else if (getArrival() > 0 && getLeft() <= 0)
 			setLeft(System.currentTimeMillis());
-		}
 	}
 	
 	public long getArrival() {
@@ -207,6 +210,10 @@ public class OASession implements OnSharedPreferenceChangeListener, BluetoothPro
 	
 	public boolean getRoundAt5() {
 		return getPrefs().getBoolean(PK.ROUND, false);
+	}
+	
+	public boolean getCleanAlert() {
+		return getPrefs().getBoolean(PK.CLEAN, false);
 	}
 	
 	public String getBTACDevice() {
@@ -298,6 +305,7 @@ public class OASession implements OnSharedPreferenceChangeListener, BluetoothPro
 		PendingIntent li = mkPI(AC.LEAVE);
 		PendingIntent bi = mkPI(AC.BLUNC);
 		PendingIntent ei = mkPI(AC.ELUNC);
+		PendingIntent ci = mkPI(AC.CLEAN);
 		long at = getArrival();
 		long lt = getLeaving();
 		long bt = getLunchBegin();
@@ -327,6 +335,26 @@ public class OASession implements OnSharedPreferenceChangeListener, BluetoothPro
 			} else {
 				am.set(AlarmManager.RTC_WAKEUP, et, ei);
 				Log.v(getClass().getSimpleName(), "lunch end alarm set to " + timeString(et));
+			}
+		}
+		if (getWeekDay() == Calendar.TUESDAY) {
+			Calendar cal = Calendar.getInstance();
+			cal.set(Calendar.HOUR, 18);
+			cal.set(Calendar.MINUTE, 0);
+			cal.set(Calendar.SECOND, 0);
+			cal.set(Calendar.MILLISECOND, 0);
+			long ct = cal.getTimeInMillis();
+			if (!getCleanAlert() || ct >= System.currentTimeMillis()) {
+				am.cancel(ci);
+				Log.v(getClass().getSimpleName(), "cleaning alarm canceled");
+			} else {
+				cal.set(Calendar.HOUR, 17);
+				cal.set(Calendar.MINUTE, 40);
+				ct = cal.getTimeInMillis();
+				if (ct >= System.currentTimeMillis()) {
+					am.setRepeating(AlarmManager.RTC_WAKEUP, ct, (getInOffice() ? 5 : 10) * 60000, ci);
+					Log.v(getClass().getSimpleName(), "cleaning alarm set to " + timeString(ct));
+				}
 			}
 		}
 	}

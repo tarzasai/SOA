@@ -16,6 +16,8 @@
     <string name="pd_btauto_summ">Bluetooth device to connect at home</string>
     <string name="pk_round_title">Round at 5</string>
     <string name="pk_round_summ">Truncate at nearest 5 minutes</string>
+    <string name="pk_clean_title">Cleaning alert</string>
+    <string name="pk_clean_summ">Enable/disable cleaning time at office</string>
     <string name="pc_lunch_title">Lunch alerts</string>
     <string name="pk_lunch_title">Lunch time alerts</string>
     <string name="pk_lunch_summ">Alerts at lunch time begin-end</string>
@@ -37,6 +39,8 @@
     <string name="msg_blunc_text">Lunch time started</string>
     <string name="msg_elunc_title">Get back to work!</string>
     <string name="msg_elunc_text">Lunch time ended</string>
+    <string name="msg_clean_title">Pulizie!</string>
+    <string name="msg_clean_text">Alle 18 è cleaning time</string>
     <string name="test_time">22:58</string>
     <string name="test_date">mer 20 nov</string>
     <string name="test_alarm">mer 22:58</string>

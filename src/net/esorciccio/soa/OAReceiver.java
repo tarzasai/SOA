@@ -22,7 +22,6 @@ import android.net.Uri;
 import android.net.wifi.ScanResult;
 import android.net.wifi.WifiManager;
 import android.support.v4.app.NotificationCompat;
-import android.text.TextUtils;
 import android.text.format.DateUtils;
 import android.util.Log;
 import android.widget.Toast;
@@ -33,6 +32,7 @@ public class OAReceiver extends BroadcastReceiver implements BluetoothProfile.Se
 	private static final int NOTIF_LEAVE = 1;
 	private static final int NOTIF_BLUNC = 2;
 	private static final int NOTIF_ELUNC = 3;
+	private static final int NOTIF_CLEAN = 4;
 	private static final Uri NOTIF_SOUND = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
 	private static final int VFLAGS = AudioManager.FLAG_PLAY_SOUND + AudioManager.FLAG_SHOW_UI;
 	
@@ -87,6 +87,7 @@ public class OAReceiver extends BroadcastReceiver implements BluetoothProfile.Se
 					break;
 				}
 			session.setInOffice(res);
+			/*
 			// bluetooth
 			String btauto = session.getBTACDevice();
 			if (!TextUtils.isEmpty(btauto) && OASession.isBTEnabled && !OASession.isBTConnected) {
@@ -103,6 +104,7 @@ public class OAReceiver extends BroadcastReceiver implements BluetoothProfile.Se
 					ba.getProfileProxy(context, this, BluetoothProfile.A2DP);
 				}
 			}
+			*/
 		} else if (act.equals(OASession.AC.BLUNC)) {
 			nm.notify(NOTIF_BLUNC, getNotif(context, R.string.msg_blunc_title, R.string.msg_blunc_text));
 		} else if (act.equals(OASession.AC.ELUNC)) {
@@ -114,6 +116,8 @@ public class OAReceiver extends BroadcastReceiver implements BluetoothProfile.Se
 				session.getLeaving(), System.currentTimeMillis(), DateUtils.MINUTE_IN_MILLIS).toString()));
 			nm.cancel(NOTIF_BLUNC);
 			nm.cancel(NOTIF_ELUNC);
+		} else if (act.equals(OASession.AC.CLEAN)) {
+			nm.notify(NOTIF_CLEAN, getNotif(context, R.string.msg_clean_title, R.string.msg_clean_text));
 		} else if (act.equals(REQ_CC)) {
 			PackageManager pm = context.getPackageManager();
 			for (Method m : pm.getClass().getDeclaredMethods())

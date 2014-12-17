@@ -24,6 +24,12 @@
         android:summary="@string/pd_btauto_summ"
         android:title="@string/pd_btauto_title" />
 
+    <CheckBoxPreference
+        android:defaultValue="false"
+        android:key="pk_clean"
+        android:summary="@string/pk_clean_summ"
+        android:title="@string/pk_clean_title" />
+
     <PreferenceCategory
         android:key="pc_lunch"
         android:title="@string/pc_lunch_title" >

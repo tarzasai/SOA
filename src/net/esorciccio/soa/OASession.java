@@ -337,21 +337,24 @@ public class OASession implements OnSharedPreferenceChangeListener, BluetoothPro
 				Log.v(getClass().getSimpleName(), "lunch end alarm set to " + timeString(et));
 			}
 		}
-		if (getWeekDay() == Calendar.TUESDAY) {
+		if (getWeekDay() != Calendar.TUESDAY) {
+			am.cancel(ci);
+			Log.v(getClass().getSimpleName(), "cleaning alarm canceled");
+		} else {
 			Calendar cal = Calendar.getInstance();
-			cal.set(Calendar.HOUR, 18);
+			cal.set(Calendar.HOUR_OF_DAY, 18);
 			cal.set(Calendar.MINUTE, 0);
 			cal.set(Calendar.SECOND, 0);
 			cal.set(Calendar.MILLISECOND, 0);
 			long ct = cal.getTimeInMillis();
-			if (!getCleanAlert() || ct >= System.currentTimeMillis()) {
+			if (System.currentTimeMillis() >= ct) {
 				am.cancel(ci);
 				Log.v(getClass().getSimpleName(), "cleaning alarm canceled");
-			} else {
-				cal.set(Calendar.HOUR, 17);
+			} else if (getCleanAlert()) {
+				cal.set(Calendar.HOUR_OF_DAY, 17);
 				cal.set(Calendar.MINUTE, 40);
 				ct = cal.getTimeInMillis();
-				if (ct >= System.currentTimeMillis()) {
+				if (ct > System.currentTimeMillis()) {
 					am.setRepeating(AlarmManager.RTC_WAKEUP, ct, (getInOffice() ? 5 : 10) * 60000, ci);
 					Log.v(getClass().getSimpleName(), "cleaning alarm set to " + timeString(ct));
 				}

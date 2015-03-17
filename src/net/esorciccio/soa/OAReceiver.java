@@ -65,7 +65,6 @@ public class OAReceiver extends BroadcastReceiver implements BluetoothProfile.Se
 		String act = intent.getAction();
 		Log.v(getClass().getSimpleName(), act);
 		if (act.equals("android.intent.action.BOOT_COMPLETED")) {
-			session.checkAlarms();
 			session.checkNetwork();
 			session.checkBluetooth();
 		} else if (act.equals("android.net.conn.CONNECTIVITY_CHANGE") ||
@@ -145,6 +144,7 @@ public class OAReceiver extends BroadcastReceiver implements BluetoothProfile.Se
 	    } else if (act.equals("android.bluetooth.device.action.ACL_DISCONNECTED")) {
 	    	OASession.isBTConnected = false;
 	    }
+		session.checkAlarms();
 	}
 	
 	@Override

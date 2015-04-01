@@ -39,7 +39,6 @@ public class OAReceiver extends BroadcastReceiver implements BluetoothProfile.Se
 	public static final String REQ_CC = "net.esorciccio.soa.REQUEST_CACHE_CLEAR";
 	public static final String REQ_VD = "net.esorciccio.soa.REQUEST_VOLUME_DOWN";
 	public static final String REQ_VU = "net.esorciccio.soa.REQUEST_VOLUME_UP";
-	public static final String REQ_E3 = "net.esorciccio.soa.REQUEST_DIALOG_TRE";
 	
 	private static AudioManager audioMan(Context context) {
 		return (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
@@ -134,11 +133,6 @@ public class OAReceiver extends BroadcastReceiver implements BluetoothProfile.Se
 			audioMan(context).adjustStreamVolume(AudioManager.STREAM_MUSIC, AudioManager.ADJUST_RAISE, VFLAGS);
 		} else if (act.equals(REQ_VD)) {
 			audioMan(context).adjustStreamVolume(AudioManager.STREAM_MUSIC, AudioManager.ADJUST_LOWER, VFLAGS);
-		} else if (act.equals(REQ_E3)) {
-			Toast.makeText(context, DateUtils.getRelativeTimeSpanString(session.getLast3oktime(),
-				System.currentTimeMillis(), DateUtils.MINUTE_IN_MILLIS).toString(), Toast.LENGTH_SHORT).show();
-			if (session.isLast3failed())
-				TreActivity.lastrun = -1;
 		} else if (act.equals("android.bluetooth.device.action.ACL_CONNECTED")) {
 	        OASession.isBTConnected = true;
 	    } else if (act.equals("android.bluetooth.device.action.ACL_DISCONNECTED")) {

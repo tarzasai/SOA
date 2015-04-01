@@ -23,6 +23,8 @@ import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.net.wifi.WifiInfo;
+import android.net.wifi.WifiManager;
 import android.preference.PreferenceManager;
 import android.telephony.TelephonyManager;
 import android.text.TextUtils;
@@ -246,54 +248,6 @@ public class OASession implements OnSharedPreferenceChangeListener, BluetoothPro
 		return cal.getTimeInMillis();
 	}
 	
-	public void setLast3data(String credito, String traffico) {
-		Log.v(getClass().getSimpleName(), "setLast3data");
-		SharedPreferences.Editor editor = prefs.edit();
-		editor.putString(PK.L3CRE, credito);
-		editor.putString(PK.L3TRA, traffico);
-		editor.putLong(PK.L3TIM, System.currentTimeMillis());
-		editor.remove(PK.L3ERR);
-		editor.commit();
-	}
-	
-	public void setLast3fail(String error) {
-		Log.v(getClass().getSimpleName(), "setLast3fail");
-		SharedPreferences.Editor editor = prefs.edit();
-		editor.putString(PK.L3ERR, error);
-		editor.commit();
-	}
-	
-	public String getLast3cred() {
-		return prefs.getString(PK.L3CRE, "n/a");
-	}
-	
-	public String getLast3traf() {
-		return prefs.getString(PK.L3TRA, "n/a");
-	}
-	
-	public long getLast3oktime() {
-		return prefs.getLong(PK.L3TIM, 0);
-	}
-	
-	public String getLast3error() {
-		return prefs.getString(PK.L3ERR, "");
-	}
-	
-	public boolean isLast3failed() {
-		return !TextUtils.isEmpty(getLast3error());
-	}
-	
-	public boolean canTreCheck() {
-		if (TreActivity.running || !isOn3G || isRoaming)
-			return false;
-		long t = getLast3oktime();
-		if (t > 0)
-			t = System.currentTimeMillis() - t;
-		if (isLast3failed())
-			return TreActivity.lastrun <= 0 || (System.currentTimeMillis() - TreActivity.lastrun) > (15 * 60000);
-		return t > (30 * 60000);
-	}
-	
 	private static PendingIntent mkPI(String action) {
 		return PendingIntent.getBroadcast(appContext, 0, new Intent(appContext, OAReceiver.class).setAction(action),
 			PendingIntent.FLAG_UPDATE_CURRENT);
@@ -362,14 +316,29 @@ public class OASession implements OnSharedPreferenceChangeListener, BluetoothPro
 		}
 	}
 	
+	public static String network = "Non connesso";
+	
 	public void checkNetwork() {
+		network = "Non connesso";
+		
 		ConnectivityManager cm = (ConnectivityManager) appContext.getSystemService(Context.CONNECTIVITY_SERVICE);
 		NetworkInfo ni = cm.getActiveNetworkInfo();
 		int ns = (ni != null && ni.isConnected()) ? ni.getType() : ConnectivityManager.TYPE_DUMMY;
 		isOnWIFI = ns == ConnectivityManager.TYPE_WIFI;
 		isOn3G = ns == ConnectivityManager.TYPE_MOBILE;
+		
+		if (isOnWIFI) {
+			WifiManager wm = (WifiManager) appContext.getSystemService(Context.WIFI_SERVICE);
+			WifiInfo wi = wm.getConnectionInfo();
+			if (wi != null && !TextUtils.isEmpty(wi.getSSID()))
+				network = wi.getSSID().replace("\"", "");
+		}
+		
 		TelephonyManager tm = (TelephonyManager) appContext.getSystemService(Context.TELEPHONY_SERVICE);
 		isRoaming = (tm != null && tm.isNetworkRoaming());
+		
+		if (ns == ConnectivityManager.TYPE_MOBILE)
+			network = tm.getNetworkOperatorName();
 	}
 	
 	public void checkBluetooth() {

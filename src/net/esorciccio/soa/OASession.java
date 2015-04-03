@@ -1,6 +1,5 @@
 package net.esorciccio.soa;
 
-import java.text.DateFormat;
 import java.text.DateFormatSymbols;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -389,7 +388,6 @@ public class OASession implements OnSharedPreferenceChangeListener, BluetoothPro
 	}
 	
 	public static String timeString(long time) {
-		return time <= 0 ? "n/a" : DateUtils.formatSameDayTime(time, System.currentTimeMillis(), DateFormat.SHORT,
-			DateFormat.SHORT).toString();
+		return time <= 0 ? "n/a" : new SimpleDateFormat("HH:mm", Locale.getDefault()).format(new Date(time));
 	}
 }

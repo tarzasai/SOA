@@ -1,6 +1,10 @@
-package net.esorciccio.soa;
+package net.esorciccio.soa.pref;
 
 import net.esorciccio.soa.R;
+import net.esorciccio.soa.R.id;
+import net.esorciccio.soa.R.layout;
+import net.esorciccio.soa.data.DaysetAdapter;
+import net.esorciccio.soa.serv.OASession;
 import android.content.Context;
 import android.preference.DialogPreference;
 import android.util.AttributeSet;

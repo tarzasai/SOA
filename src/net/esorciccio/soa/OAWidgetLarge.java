@@ -1,5 +1,6 @@
 package net.esorciccio.soa;
 
+import net.esorciccio.soa.serv.OAService;
 import android.appwidget.AppWidgetManager;
 import android.appwidget.AppWidgetProvider;
 import android.content.Context;

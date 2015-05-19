@@ -1,10 +1,11 @@
 package net.esorciccio.soa;
 
+import net.esorciccio.soa.serv.OAReceiver;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 
-public class CCHidden extends Activity {
+public class CleanerActivity extends Activity {
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {

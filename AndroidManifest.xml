@@ -40,7 +40,7 @@
         </activity>
         
         <activity 
-            android:name=".CCShortcut"
+            android:name=".CleanerShortcut"
             android:label="@string/shortcut_name"
             android:icon="@drawable/ic_action_delete" >
             <intent-filter>
@@ -50,7 +50,7 @@
         </activity>
         
         <activity 
-            android:name=".CCHidden"
+            android:name=".CleanerActivity"
             android:theme="@android:style/Theme.NoDisplay" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -58,7 +58,7 @@
         </activity>
 
         <receiver
-            android:name=".OAReceiver"
+            android:name=".serv.OAReceiver"
             android:enabled="true"
             android:exported="true" >
             <intent-filter>
@@ -77,7 +77,8 @@
             </intent-filter>
         </receiver>
         
-        <receiver android:name=".OAWidgetSmall" >
+        <receiver 
+            android:name=".OAWidgetSmall" >
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
             </intent-filter>
@@ -86,7 +87,8 @@
                 android:resource="@xml/widget_small_info" />
         </receiver>
         
-        <receiver android:name=".OAWidgetLarge" >
+        <receiver 
+            android:name=".OAWidgetLarge" >
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
             </intent-filter>
@@ -95,18 +97,10 @@
                 android:resource="@xml/widget_large_info" />
         </receiver>
 
-        <service
-            android:name=".OAService"
+        <service 
+            android:name=".serv.OAService"
             android:exported="false" >
         </service>
-
-        <activity
-            android:name=".TreActivity"
-            android:label="@string/title_activity_tre"
-            android:theme="@android:style/Theme.NoDisplay"
-            android:noHistory="true"
-            android:excludeFromRecents="true" >
-        </activity>
     </application>
 
 </manifest>

@@ -1,4 +1,6 @@
-package net.esorciccio.soa;
+package net.esorciccio.soa.pref;
+
+import java.util.Locale;
 
 import net.esorciccio.soa.R;
 import android.content.Context;
@@ -27,14 +29,6 @@ public class TimePreference extends DialogPreference {
 		
 		setPositiveButtonText(R.string.dlg_btn_ok);
 		setNegativeButtonText(R.string.dlg_btn_cancel);
-	}
-	
-	public static int getHour(String time) {
-		return (Integer.parseInt(time.split(":")[0]));
-	}
-	
-	public static int getMinute(String time) {
-		return (Integer.parseInt(time.split(":")[1]));
 	}
 	
 	@Override
@@ -88,6 +82,14 @@ public class TimePreference extends DialogPreference {
 	
 	@Override
 	public CharSequence getSummary() {
-		return String.valueOf(lastHour) + ":" + String.valueOf(lastMinute);
+		return String.format(Locale.getDefault(), "%02d:%02d", lastHour, lastMinute);
+	}
+	
+	private static int getHour(String time) {
+		return (Integer.parseInt(time.split(":")[0]));
+	}
+	
+	private static int getMinute(String time) {
+		return (Integer.parseInt(time.split(":")[1]));
 	}
 }

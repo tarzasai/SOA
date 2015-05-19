@@ -1,7 +1,9 @@
-package net.esorciccio.soa;
+package net.esorciccio.soa.pref;
 
 import java.util.Set;
 
+import net.esorciccio.soa.R;
+import net.esorciccio.soa.R.string;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.Context;

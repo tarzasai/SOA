@@ -4,13 +4,13 @@ import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 
-public class CCShortcut extends Activity {
+public class CleanerShortcut extends Activity {
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		
-		Intent shc = new Intent(getApplicationContext(), CCHidden.class);
+		Intent shc = new Intent(getApplicationContext(), CleanerActivity.class);
 		shc.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 		shc.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
 		

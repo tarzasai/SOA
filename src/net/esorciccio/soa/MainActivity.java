@@ -2,6 +2,7 @@ package net.esorciccio.soa;
 
 import java.util.Calendar;
 
+import net.esorciccio.soa.serv.OASession;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;

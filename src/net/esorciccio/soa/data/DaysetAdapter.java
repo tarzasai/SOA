@@ -1,6 +1,9 @@
-package net.esorciccio.soa;
+package net.esorciccio.soa.data;
 
 import net.esorciccio.soa.R;
+import net.esorciccio.soa.R.id;
+import net.esorciccio.soa.R.layout;
+import net.esorciccio.soa.serv.OASession;
 import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;

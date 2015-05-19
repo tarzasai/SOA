@@ -1,5 +1,8 @@
-package net.esorciccio.soa;
+package net.esorciccio.soa.serv;
 
+import net.esorciccio.soa.MainActivity;
+import net.esorciccio.soa.OAWidgetLarge;
+import net.esorciccio.soa.R;
 import android.app.IntentService;
 import android.app.PendingIntent;
 import android.appwidget.AppWidgetManager;
@@ -38,7 +41,6 @@ public class OAService extends IntentService {
 		session = OASession.getInstance(this);
 		session.checkAlarms();
 		session.checkNetwork();
-		session.checkBluetooth();
 		compName = new ComponentName(this, OAWidgetLarge.class);
 		try {
 			PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);

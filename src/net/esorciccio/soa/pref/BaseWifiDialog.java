@@ -1,23 +1,30 @@
-package net.esorciccio.soa;
+package net.esorciccio.soa.pref;
 
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
+import net.esorciccio.soa.R;
+import net.esorciccio.soa.data.WifisetAdapter;
+import net.esorciccio.soa.serv.OASession;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.res.TypedArray;
 import android.net.wifi.ScanResult;
 import android.net.wifi.WifiManager;
-import android.preference.DialogPreference;
+import android.preference.ListPreference;
+import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.view.View;
 import android.widget.ListView;
 import android.widget.Toast;
 
-public class BaseWifiDialog extends DialogPreference {
+public class BaseWifiDialog extends ListPreference {
 	
 	private OASession session;
+	private Set<String> lastSet;
 	private WifisetAdapter adapter;
 	private WifiManager wifiman;
 	private WifiReceiver receiver;
@@ -55,6 +62,12 @@ public class BaseWifiDialog extends DialogPreference {
 	}
 	
 	@Override
+	protected void onBindDialogView(View v) {
+		super.onBindDialogView(v);
+		
+	}
+	
+	@Override
 	protected void onDialogClosed(boolean positiveResult) {
 		super.onDialogClosed(positiveResult);
 		
@@ -62,6 +75,21 @@ public class BaseWifiDialog extends DialogPreference {
 		
 		if (positiveResult)
 			session.setWifiSet(wifiPreference, adapter.getWifiset(true));
+	}
+	
+	@Override
+	protected Object onGetDefaultValue(TypedArray a, int index) {
+		return a.getTextArray(index);
+	}
+	
+	@Override
+	protected void onSetInitialValue(boolean restoreValue, Object defaultValue) {
+		String value = null;
+		CharSequence[] defaults = defaultValue == null ? new CharSequence[0] : (CharSequence[]) defaultValue;
+		String joinedDefaults = TextUtils.join("|", Arrays.asList(defaults));
+		value = restoreValue ? getPersistedString(joinedDefaults) : joinedDefaults;
+		lastSet = new HashSet<String>(Arrays.asList(value.split("|")));
+		setSummary(TextUtils.join(", ", lastSet));
 	}
 	
 	private void foundWiFi(Set<String> ssids) {

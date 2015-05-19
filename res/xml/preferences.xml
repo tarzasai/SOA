@@ -1,49 +1,58 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" >
 
-    <net.esorciccio.soa.DaysetsDialog
-        android:summary="@string/pd_dayset_summ"
-        android:title="@string/pd_dayset_title" />
-
-    <net.esorciccio.soa.WifiOADialog
-        android:summary="@string/pd_wifiset_summ"
-        android:title="@string/pd_wifiset_title" />
-
     <CheckBoxPreference
         android:defaultValue="false"
         android:key="pk_round"
         android:summary="@string/pk_round_summ"
         android:title="@string/pk_round_title" />
 
-    <net.esorciccio.soa.WifiBTDialog
+    <net.esorciccio.soa.pref.DaysetsDialog
+        android:summary="@string/pd_dayset_summ"
+        android:title="@string/pd_dayset_title" />
+
+    <net.esorciccio.soa.pref.WifiOADialog
+        android:summary="@string/pd_wifiset_summ"
+        android:title="@string/pd_wifiset_title" />
+
+    <net.esorciccio.soa.pref.WifiBTDialog
         android:summary="@string/pd_wifibt_summ"
         android:title="@string/pd_wifibt_title" />
 
-    <net.esorciccio.soa.BTListPreference
-        android:key="pk_btauto"
-        android:summary="@string/pd_btauto_summ"
-        android:title="@string/pd_btauto_title" />
+    <PreferenceCategory
+        android:key="pc_clean"
+        android:title="@string/pc_clean_title" >
+	    
+        <net.esorciccio.soa.pref.IntListPreference
+            android:defaultValue="30"
+            android:key="pk_cleanday"
+            android:title="@string/pk_clday_title"
+            android:dialogTitle="@string/pk_clday_title"
+            android:entries="@array/pk_clday_names"
+            android:entryValues="@array/pk_clday_values" />
 
-    <CheckBoxPreference
-        android:defaultValue="false"
-        android:key="pk_clean"
-        android:summary="@string/pk_clean_summ"
-        android:title="@string/pk_clean_title" />
+        <net.esorciccio.soa.pref.TimePreference
+            android:defaultValue="18:00"
+            android:key="pk_cleantime"
+            android:title="@string/pk_cltim_title" />
+    </PreferenceCategory>
 
     <PreferenceCategory
         android:key="pc_lunch"
         android:title="@string/pc_lunch_title" >
+        
         <CheckBoxPreference
             android:defaultValue="true"
             android:key="pk_lunch"
             android:summary="@string/pk_lunch_summ"
             android:title="@string/pk_lunch_title" />
 
-        <net.esorciccio.soa.TimePreference
+        <net.esorciccio.soa.pref.TimePreference
             android:defaultValue="13:30"
             android:key="pk_lstart"
             android:title="@string/pk_lstart_title" />
-        <net.esorciccio.soa.TimePreference
+        
+        <net.esorciccio.soa.pref.TimePreference
             android:defaultValue="14:30"
             android:key="pk_lstop"
             android:title="@string/pk_lstop_title" />

@@ -1,10 +1,14 @@
-package net.esorciccio.soa;
+package net.esorciccio.soa.data;
 
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import net.esorciccio.soa.R;
+import net.esorciccio.soa.R.id;
+import net.esorciccio.soa.R.layout;
+import net.esorciccio.soa.serv.OASession;
 import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;

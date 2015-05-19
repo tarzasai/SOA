@@ -7,6 +7,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.widget.RemoteViews;
 import net.esorciccio.soa.R;
+import net.esorciccio.soa.serv.OASession;
 
 public class OAWidgetSmall extends AppWidgetProvider {
 	

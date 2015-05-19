@@ -1,11 +1,9 @@
-package net.esorciccio.soa;
+package net.esorciccio.soa.serv;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.List;
-import java.util.Set;
 
-import net.esorciccio.soa.OASession.PK;
+import net.esorciccio.soa.R;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.bluetooth.BluetoothA2dp;
@@ -19,7 +17,6 @@ import android.content.pm.PackageManager;
 import android.media.AudioManager;
 import android.media.RingtoneManager;
 import android.net.Uri;
-import android.net.wifi.ScanResult;
 import android.net.wifi.WifiManager;
 import android.support.v4.app.NotificationCompat;
 import android.text.format.DateUtils;
@@ -66,7 +63,6 @@ public class OAReceiver extends BroadcastReceiver implements BluetoothProfile.Se
 		if (act.equals("android.intent.action.BOOT_COMPLETED")) {
 			session.checkAlarms();
 			session.checkNetwork();
-			session.checkBluetooth();
 		} else if (act.equals("android.net.conn.CONNECTIVITY_CHANGE") ||
 			act.equals("android.net.wifi.WIFI_STATE_CHANGED") ||
 			act.equals("android.net.wifi.STATE_CHANGE")) {
@@ -75,35 +71,7 @@ public class OAReceiver extends BroadcastReceiver implements BluetoothProfile.Se
 			int bton = intent.getIntExtra(BluetoothAdapter.EXTRA_STATE, BluetoothAdapter.ERROR);
 			OASession.isBTEnabled = bton == BluetoothAdapter.STATE_ON;
 		} else if (act.equals("android.net.wifi.SCAN_RESULTS")) {
-			List<ScanResult> wifis = ((WifiManager) context.getSystemService(Context.WIFI_SERVICE)).getScanResults();
-			Set<String> ssids;
-			boolean res = false;
-			// office
-			ssids = session.getWifiSet(PK.WIFIS);
-			for (ScanResult sr : wifis)
-				if (ssids.contains(sr.SSID)) {
-					res = true;
-					break;
-				}
-			session.setInOffice(res);
-			/*
-			// bluetooth
-			String btauto = session.getBTACDevice();
-			if (!TextUtils.isEmpty(btauto) && OASession.isBTEnabled && !OASession.isBTConnected) {
-				res = false;
-				ssids = session.getWifiSet(PK.WIFIH);
-				for (ScanResult sr : wifis)
-					if (ssids.contains(sr.SSID)) {
-						res = true;
-						break;
-					}
-				if (res) {
-					BluetoothAdapter ba = BluetoothAdapter.getDefaultAdapter();
-					btDevice = ba.getRemoteDevice(session.getBTACDevice());
-					ba.getProfileProxy(context, this, BluetoothProfile.A2DP);
-				}
-			}
-			*/
+			session.checkLocation(((WifiManager) context.getSystemService(Context.WIFI_SERVICE)).getScanResults());
 		} else if (act.equals(OASession.AC.BLUNC)) {
 			nm.notify(NOTIF_BLUNC, getNotif(context, R.string.msg_blunc_title, R.string.msg_blunc_text));
 		} else if (act.equals(OASession.AC.ELUNC)) {

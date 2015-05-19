@@ -1,4 +1,4 @@
-package net.esorciccio.soa;
+package net.esorciccio.soa.serv;
 
 import java.text.DateFormatSymbols;
 import java.text.SimpleDateFormat;
@@ -9,12 +9,10 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 
+import net.esorciccio.soa.OAWidgetSmall;
 import android.app.AlarmManager;
 import android.app.PendingIntent;
 import android.appwidget.AppWidgetManager;
-import android.bluetooth.BluetoothAdapter;
-import android.bluetooth.BluetoothDevice;
-import android.bluetooth.BluetoothProfile;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -22,6 +20,7 @@ import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.net.wifi.ScanResult;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.preference.PreferenceManager;
@@ -30,32 +29,30 @@ import android.text.TextUtils;
 import android.text.format.DateUtils;
 import android.util.Log;
 
-public class OASession implements OnSharedPreferenceChangeListener, BluetoothProfile.ServiceListener {
+public class OASession implements OnSharedPreferenceChangeListener {
 	
-	static class AC {
+	public static class AC {
 		public static final String LEAVE = "net.esorciccio.soa.OASession.AC.LEAVE";
 		public static final String BLUNC = "net.esorciccio.soa.OASession.AC.BLUNC";
 		public static final String ELUNC = "net.esorciccio.soa.OASession.AC.ELUNC";
 		public static final String CLEAN = "net.esorciccio.soa.OASession.AC.CLEAN";
 	}
 	
-	static class PK {
+	public static class PK {
 		public static final String HOURS = "pk_hours";
-		public static final String WIFIS = "pk_wifis";
-		public static final String WIFIH = "pk_wifih";
+		public static final String WFWRK = "pk_wifis";
+		public static final String WFHOM = "pk_wifih";
 		public static final String ROUND = "pk_round";
-		public static final String BTDEV = "pk_btauto";
-		public static final String THERE = "pk_there";
 		public static final String ARRIV = "pk_arrival";
 		public static final String LEAVE = "pk_leaving";
 		public static final String LUNCH = "pk_lunch";
 		public static final String BLUNC = "pk_lstart";
 		public static final String ELUNC = "pk_lstop";
-		public static final String CLEAN = "pk_clean";
-		public static final String L3CRE = "last_3_cred";
-		public static final String L3TRA = "last_3_traf";
-		public static final String L3TIM = "last_3_time";
-		public static final String L3ERR = "last_3_fail";
+		public static final String CLDAY = "pk_cleanday";
+		public static final String CLTIM = "pk_cleantime";
+		// no checkalarms:
+		public static final String ATWRK = "pk_at_office";
+		public static final String ATHOM = "pk_at_house";
 	}
 	
 	private static Context appContext;
@@ -133,18 +130,38 @@ public class OASession implements OnSharedPreferenceChangeListener, BluetoothPro
 		editor.commit();
 	}
 	
-	public boolean getInOffice() {
-		return getPrefs().getBoolean(PK.THERE, false);
+	public boolean getAtWork() {
+		return getPrefs().getBoolean(PK.ATWRK, false);
 	}
 	
-	public void setInOffice(boolean value) {
-		if (value == getInOffice())
+	public boolean getAtHome() {
+		return getPrefs().getBoolean(PK.ATHOM, false);
+	}
+	
+	public void checkLocation(List<ScanResult> networks) {
+		boolean oldAtWork = getAtWork();
+		boolean newAtWork = false;
+		Set<String> workWiFis = getPrefs().getStringSet(PK.WFWRK, new HashSet<String>());
+		Set<String> homeWiFis = getPrefs().getStringSet(PK.WFHOM, new HashSet<String>());
+		for (ScanResult sr : networks) {
+			if (workWiFis.contains(sr.SSID)) {
+				SharedPreferences.Editor editor = prefs.edit();
+				newAtWork = true;
+				editor.putBoolean(PK.ATWRK, true);
+				editor.putBoolean(PK.ATHOM, false);
+				editor.commit();
+				break;
+			} else if (homeWiFis.contains(sr.SSID)) {
+				SharedPreferences.Editor editor = prefs.edit();
+				editor.putBoolean(PK.ATWRK, false);
+				editor.putBoolean(PK.ATHOM, true);
+				editor.commit();
+				break;
+			}
+		}
+		if (newAtWork == oldAtWork)
 			return;
-		Log.v(getClass().getSimpleName(), "setInOffice");
-		SharedPreferences.Editor editor = prefs.edit();
-		editor.putBoolean(PK.THERE, value);
-		editor.commit();
-		if (value) {
+		if (newAtWork) {
 			if (getArrival() <= 0)
 				setArrival(System.currentTimeMillis());
 			else
@@ -213,12 +230,19 @@ public class OASession implements OnSharedPreferenceChangeListener, BluetoothPro
 		return getPrefs().getBoolean(PK.ROUND, false);
 	}
 	
-	public boolean getCleanAlert() {
-		return getPrefs().getBoolean(PK.CLEAN, false);
+	public int getCleanDay() {
+		return getPrefs().getInt(PK.CLDAY, 0);
 	}
 	
-	public String getBTACDevice() {
-		return getPrefs().getString(PK.BTDEV, "");
+	public long getCleanTime() {
+		String[] tp = getPrefs().getString(PK.CLTIM, "18:00").split(":");
+		Calendar cal = Calendar.getInstance();
+		cal.setTimeInMillis(System.currentTimeMillis());
+		cal.set(Calendar.HOUR_OF_DAY, Integer.parseInt(tp[0]));
+		cal.set(Calendar.MINUTE, Integer.parseInt(tp[1]));
+		cal.set(Calendar.SECOND, 0);
+		cal.set(Calendar.MILLISECOND, 0);
+		return cal.getTimeInMillis();
 	}
 	
 	public boolean getLunchAlerts() {
@@ -263,7 +287,7 @@ public class OASession implements OnSharedPreferenceChangeListener, BluetoothPro
 		long lt = getLeaving();
 		long bt = getLunchBegin();
 		long et = getLunchEnd();
-		if (!(getInOffice() && at > 0 && lt > System.currentTimeMillis())) {
+		if (!(getAtWork() && at > 0 && lt > System.currentTimeMillis())) {
 			am.cancel(li);
 			Log.v(getClass().getSimpleName(), "leaving alarm canceled");
 		} else {
@@ -290,25 +314,21 @@ public class OASession implements OnSharedPreferenceChangeListener, BluetoothPro
 				Log.v(getClass().getSimpleName(), "lunch end alarm set to " + timeString(et));
 			}
 		}
-		if (getWeekDay() != Calendar.TUESDAY) {
+		if (getWeekDay() != getCleanDay()) {
 			am.cancel(ci);
 			Log.v(getClass().getSimpleName(), "cleaning alarm canceled");
 		} else {
-			Calendar cal = Calendar.getInstance();
-			cal.set(Calendar.HOUR_OF_DAY, 18);
-			cal.set(Calendar.MINUTE, 0);
-			cal.set(Calendar.SECOND, 0);
-			cal.set(Calendar.MILLISECOND, 0);
-			long ct = cal.getTimeInMillis();
+			long ct = getCleanTime();
 			if (System.currentTimeMillis() >= ct) {
 				am.cancel(ci);
 				Log.v(getClass().getSimpleName(), "cleaning alarm canceled");
-			} else if (getCleanAlert()) {
-				cal.set(Calendar.HOUR_OF_DAY, 17);
-				cal.set(Calendar.MINUTE, 40);
+			} else {
+				Calendar cal = Calendar.getInstance();
+				cal.setTimeInMillis(ct);
+				cal.add(Calendar.MINUTE, -40);
 				ct = cal.getTimeInMillis();
 				if (ct > System.currentTimeMillis()) {
-					am.setRepeating(AlarmManager.RTC_WAKEUP, ct, (getInOffice() ? 5 : 10) * 60000, ci);
+					am.setRepeating(AlarmManager.RTC_WAKEUP, ct, (getAtWork() ? 5 : 10) * 60000, ci);
 					Log.v(getClass().getSimpleName(), "cleaning alarm set to " + timeString(ct));
 				}
 			}
@@ -340,18 +360,6 @@ public class OASession implements OnSharedPreferenceChangeListener, BluetoothPro
 			network = tm.getNetworkOperatorName();
 	}
 	
-	public void checkBluetooth() {
-		BluetoothAdapter ba = BluetoothAdapter.getDefaultAdapter();
-		if (ba == null) {
-			isBTEnabled = false;
-			isBTConnected = false;
-		} else {
-			isBTEnabled = ba.isEnabled();
-			if (!TextUtils.isEmpty(getBTACDevice()))
-				ba.getProfileProxy(appContext, this, BluetoothProfile.A2DP);
-		}
-	}
-	
 	public void updateWidget() {
 		appContext.sendBroadcast(new Intent(appContext, OAWidgetSmall.class).setAction(
 			AppWidgetManager.ACTION_APPWIDGET_UPDATE).putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS,
@@ -361,26 +369,10 @@ public class OASession implements OnSharedPreferenceChangeListener, BluetoothPro
 	
 	@Override
 	public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
-		checkAlarms();
-		checkBluetooth();
+		if (!(key.equals(PK.ATWRK) || key.equals(PK.ATHOM)))
+			checkAlarms();
+		//checkBluetooth();
 		updateWidget();
-	}
-	
-	@Override
-	public void onServiceConnected(int profile, BluetoothProfile proxy) {
-		List<BluetoothDevice> devices = proxy.getConnectedDevices();
-		if (devices != null)
-			for (BluetoothDevice bd: devices)
-				if (bd.getAddress().equals(getBTACDevice())) {
-					isBTConnected = true;
-					return;
-				}
-		isBTConnected = false;
-	}
-	
-	@Override
-	public void onServiceDisconnected(int profile) {
-		// nothing to do.
 	}
 	
 	public static String dateString(long time, String format) {

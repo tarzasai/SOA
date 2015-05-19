@@ -53,6 +53,13 @@ public class OASession implements OnSharedPreferenceChangeListener {
 		// no checkalarms:
 		public static final String ATWRK = "pk_at_office";
 		public static final String ATHOM = "pk_at_house";
+		public static final String WSCAN = "pk_last_scan";
+	}
+	
+	public static class WR {
+		public static final String CLEAR_CACHE = "net.esorciccio.soa.REQUEST_CACHE_CLEAR";
+		public static final String VOLUME_DOWN = "net.esorciccio.soa.REQUEST_VOLUME_DOWN";
+		public static final String VOLUME_UP = "net.esorciccio.soa.REQUEST_VOLUME_UP";
 	}
 	
 	private static Context appContext;
@@ -67,8 +74,6 @@ public class OASession implements OnSharedPreferenceChangeListener {
 	public static boolean isOnWIFI = false;
 	public static boolean isOn3G = false;
 	public static boolean isRoaming = false;
-	public static boolean isBTEnabled = false;
-	public static boolean isBTConnected = false;
 	
 	private final String[] daynames;
 	private final SharedPreferences prefs;
@@ -138,20 +143,36 @@ public class OASession implements OnSharedPreferenceChangeListener {
 		return getPrefs().getBoolean(PK.ATHOM, false);
 	}
 	
-	public void checkLocation(List<ScanResult> networks) {
+	public Set<String> getLastWiFiScan() {
+		return getPrefs().getStringSet(PK.WSCAN, new HashSet<String>());
+	}
+	
+	public void setLastWiFiScan(List<ScanResult> networks) {
+		Set<String> values = new HashSet<String>();
+		for (ScanResult sr : networks)
+			values.add(sr.SSID);
+		SharedPreferences.Editor editor = getPrefs().edit();
+		editor.putStringSet(PK.WSCAN, values);
+		editor.commit();
+	}
+	
+	public void checkLocation() {
 		boolean oldAtWork = getAtWork();
+		boolean oldAtHome = getAtHome();
 		boolean newAtWork = false;
+		boolean newAtHome = false;
 		Set<String> workWiFis = getPrefs().getStringSet(PK.WFWRK, new HashSet<String>());
 		Set<String> homeWiFis = getPrefs().getStringSet(PK.WFHOM, new HashSet<String>());
-		for (ScanResult sr : networks) {
-			if (workWiFis.contains(sr.SSID)) {
-				SharedPreferences.Editor editor = prefs.edit();
+		for (String ssid : getLastWiFiScan()) {
+			if (workWiFis.contains(ssid)) {
 				newAtWork = true;
+				SharedPreferences.Editor editor = prefs.edit();
 				editor.putBoolean(PK.ATWRK, true);
 				editor.putBoolean(PK.ATHOM, false);
 				editor.commit();
 				break;
-			} else if (homeWiFis.contains(sr.SSID)) {
+			} else if (homeWiFis.contains(ssid)) {
+				newAtHome = true;
 				SharedPreferences.Editor editor = prefs.edit();
 				editor.putBoolean(PK.ATWRK, false);
 				editor.putBoolean(PK.ATHOM, true);
@@ -159,15 +180,17 @@ public class OASession implements OnSharedPreferenceChangeListener {
 				break;
 			}
 		}
-		if (newAtWork == oldAtWork)
-			return;
-		if (newAtWork) {
-			if (getArrival() <= 0)
-				setArrival(System.currentTimeMillis());
-			else
-				setLeft(0);
-		} else if (getArrival() > 0 && getLeft() <= 0)
-			setLeft(System.currentTimeMillis());
+		if (newAtWork != oldAtWork) {
+			if (newAtWork) {
+				if (getArrival() <= 0)
+					setArrival(System.currentTimeMillis());
+				else
+					setLeft(0);
+			} else if (getArrival() > 0 && getLeft() <= 0)
+				setLeft(System.currentTimeMillis());
+			checkAlarms();
+		} else if (newAtHome != oldAtHome)
+			checkAlarms();
 	}
 	
 	public long getArrival() {

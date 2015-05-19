@@ -1,15 +1,11 @@
 package net.esorciccio.soa.serv;
 
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 import net.esorciccio.soa.R;
+import net.esorciccio.soa.serv.OASession.WR;
 import android.app.Notification;
 import android.app.NotificationManager;
-import android.bluetooth.BluetoothA2dp;
-import android.bluetooth.BluetoothAdapter;
-import android.bluetooth.BluetoothDevice;
-import android.bluetooth.BluetoothProfile;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -23,7 +19,7 @@ import android.text.format.DateUtils;
 import android.util.Log;
 import android.widget.Toast;
 
-public class OAReceiver extends BroadcastReceiver implements BluetoothProfile.ServiceListener {
+public class OAReceiver extends BroadcastReceiver {
 	private static final String TAG = "OAReceiver";
 	
 	private static final int NOTIF_LEAVE = 1;
@@ -32,10 +28,6 @@ public class OAReceiver extends BroadcastReceiver implements BluetoothProfile.Se
 	private static final int NOTIF_CLEAN = 4;
 	private static final Uri NOTIF_SOUND = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
 	private static final int VFLAGS = AudioManager.FLAG_PLAY_SOUND + AudioManager.FLAG_SHOW_UI;
-	
-	public static final String REQ_CC = "net.esorciccio.soa.REQUEST_CACHE_CLEAR";
-	public static final String REQ_VD = "net.esorciccio.soa.REQUEST_VOLUME_DOWN";
-	public static final String REQ_VU = "net.esorciccio.soa.REQUEST_VOLUME_UP";
 	
 	private static AudioManager audioMan(Context context) {
 		return (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
@@ -52,26 +44,22 @@ public class OAReceiver extends BroadcastReceiver implements BluetoothProfile.Se
 	}
 	
 	private OASession session;
-	private BluetoothDevice btDevice;
 	
 	@Override
 	public void onReceive(Context context, Intent intent) {
 		NotificationManager nm = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
 		session = OASession.getInstance(context);
 		String act = intent.getAction();
-		Log.v(getClass().getSimpleName(), act);
-		if (act.equals("android.intent.action.BOOT_COMPLETED")) {
-			session.checkAlarms();
-			session.checkNetwork();
-		} else if (act.equals("android.net.conn.CONNECTIVITY_CHANGE") ||
+		Log.v(TAG, act);
+		if (act.equals("android.intent.action.BOOT_COMPLETED") ||
+			act.equals("android.net.conn.CONNECTIVITY_CHANGE") ||
 			act.equals("android.net.wifi.WIFI_STATE_CHANGED") ||
 			act.equals("android.net.wifi.STATE_CHANGE")) {
 			session.checkNetwork();
-		} else if (act.equals("android.bluetooth.adapter.action.STATE_CHANGED")) {
-			int bton = intent.getIntExtra(BluetoothAdapter.EXTRA_STATE, BluetoothAdapter.ERROR);
-			OASession.isBTEnabled = bton == BluetoothAdapter.STATE_ON;
+			session.checkAlarms();
 		} else if (act.equals("android.net.wifi.SCAN_RESULTS")) {
-			session.checkLocation(((WifiManager) context.getSystemService(Context.WIFI_SERVICE)).getScanResults());
+			session.setLastWiFiScan(((WifiManager) context.getSystemService(Context.WIFI_SERVICE)).getScanResults());
+			session.checkLocation();
 		} else if (act.equals(OASession.AC.BLUNC)) {
 			nm.notify(NOTIF_BLUNC, getNotif(context, R.string.msg_blunc_title, R.string.msg_blunc_text));
 		} else if (act.equals(OASession.AC.ELUNC)) {
@@ -85,7 +73,11 @@ public class OAReceiver extends BroadcastReceiver implements BluetoothProfile.Se
 			nm.cancel(NOTIF_ELUNC);
 		} else if (act.equals(OASession.AC.CLEAN)) {
 			nm.notify(NOTIF_CLEAN, getNotif(context, R.string.msg_clean_title, R.string.msg_clean_text));
-		} else if (act.equals(REQ_CC)) {
+		} else if (act.equals(WR.VOLUME_UP)) {
+			audioMan(context).adjustStreamVolume(AudioManager.STREAM_MUSIC, AudioManager.ADJUST_RAISE, VFLAGS);
+		} else if (act.equals(WR.VOLUME_DOWN)) {
+			audioMan(context).adjustStreamVolume(AudioManager.STREAM_MUSIC, AudioManager.ADJUST_LOWER, VFLAGS);
+	    } else if (act.equals(WR.CLEAR_CACHE)) {
 			PackageManager pm = context.getPackageManager();
 			for (Method m : pm.getClass().getDeclaredMethods())
 				if (m.getName().equals("freeStorageAndNotify")) {
@@ -98,36 +90,6 @@ public class OAReceiver extends BroadcastReceiver implements BluetoothProfile.Se
 					break;
 				}
 			Toast.makeText(context, "request sent", Toast.LENGTH_SHORT).show();
-		} else if (act.equals(REQ_VU)) {
-			audioMan(context).adjustStreamVolume(AudioManager.STREAM_MUSIC, AudioManager.ADJUST_RAISE, VFLAGS);
-		} else if (act.equals(REQ_VD)) {
-			audioMan(context).adjustStreamVolume(AudioManager.STREAM_MUSIC, AudioManager.ADJUST_LOWER, VFLAGS);
-		} else if (act.equals("android.bluetooth.device.action.ACL_CONNECTED")) {
-	        OASession.isBTConnected = true;
-	    } else if (act.equals("android.bluetooth.device.action.ACL_DISCONNECTED")) {
-	    	OASession.isBTConnected = false;
-	    }
-		session.checkAlarms();
-	}
-	
-	@Override
-	public void onServiceConnected(int profile, BluetoothProfile proxy) {
-		Log.v(TAG, "Connecting bluetooth device " + btDevice.getName());
-		try {
-			Method method = BluetoothA2dp.class.getDeclaredMethod("connect", BluetoothDevice.class);
-			method.setAccessible(true);
-			method.invoke((BluetoothA2dp) proxy, btDevice);
-		} catch (NoSuchMethodException ex) {
-			Log.e(TAG, "Unable to find connect(BluetoothDevice) method in BluetoothA2dp proxy.");
-		} catch (InvocationTargetException ex) {
-			Log.e(TAG, "Unable to invoke connect(BluetoothDevice) method on proxy. " + ex.toString());
-		} catch (IllegalAccessException ex) {
-			Log.e(TAG, "Illegal Access! " + ex.toString());
 		}
-	}
-	
-	@Override
-	public void onServiceDisconnected(int profile) {
-		// nothing to do.
 	}
 }

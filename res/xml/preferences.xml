@@ -1,23 +1,33 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" >
+    
+    <MultiSelectListPreference
+        android:key="pk_wifih"
+        android:title="@string/pd_wifibt_title"
+        android:summary="@string/pd_wifibt_summ"
+        android:entries="@array/empty_array"
+        android:entryValues="@array/empty_array"
+        android:defaultValue="@array/empty_array"
+        android:dialogTitle="@string/pd_wifibt_title" />
+    
+    <MultiSelectListPreference
+        android:key="pk_wifis"
+        android:title="@string/pd_wifiset_title"
+        android:summary="@string/pd_wifiset_summ"
+        android:entries="@array/empty_array"
+        android:entryValues="@array/empty_array"
+        android:defaultValue="@array/empty_array"
+        android:dialogTitle="@string/pd_wifiset_title" />
+
+    <net.esorciccio.soa.pref.DaysetsDialog
+        android:summary="@string/pd_dayset_summ"
+        android:title="@string/pd_dayset_title" />
 
     <CheckBoxPreference
         android:defaultValue="false"
         android:key="pk_round"
         android:summary="@string/pk_round_summ"
         android:title="@string/pk_round_title" />
-
-    <net.esorciccio.soa.pref.DaysetsDialog
-        android:summary="@string/pd_dayset_summ"
-        android:title="@string/pd_dayset_title" />
-
-    <net.esorciccio.soa.pref.WifiOADialog
-        android:summary="@string/pd_wifiset_summ"
-        android:title="@string/pd_wifiset_title" />
-
-    <net.esorciccio.soa.pref.WifiBTDialog
-        android:summary="@string/pd_wifibt_summ"
-        android:title="@string/pd_wifibt_title" />
 
     <PreferenceCategory
         android:key="pc_clean"

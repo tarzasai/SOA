@@ -3,6 +3,7 @@ package net.esorciccio.soa.serv;
 import net.esorciccio.soa.MainActivity;
 import net.esorciccio.soa.OAWidgetLarge;
 import net.esorciccio.soa.R;
+import net.esorciccio.soa.serv.OASession.WR;
 import android.app.IntentService;
 import android.app.PendingIntent;
 import android.appwidget.AppWidgetManager;
@@ -39,8 +40,8 @@ public class OAService extends IntentService {
 	protected void onHandleIntent(Intent intent) {
 		Log.v(TAG, "onHandleIntent");
 		session = OASession.getInstance(this);
-		session.checkAlarms();
 		session.checkNetwork();
+		session.checkAlarms();
 		compName = new ComponentName(this, OAWidgetLarge.class);
 		try {
 			PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
@@ -49,10 +50,6 @@ public class OAService extends IntentService {
 					Thread.sleep(5000);
 				else {
 					AppWidgetManager.getInstance(this).updateAppWidget(compName, buildUpdate(this));
-					/*
-					if (session.canTreCheck())
-						getApplication().startActivity(treIntent);
-					*/
 					Thread.sleep(1500);
 				}
 			}
@@ -61,18 +58,6 @@ public class OAService extends IntentService {
 		} finally {
 			stopSelf();
 		}
-	}
-	
-	@Override
-	public void onDestroy() {
-		super.onDestroy();
-		
-		/*
-		if (wv != null) {
-			WindowManager wm = (WindowManager) getSystemService(WINDOW_SERVICE);
-			wm.removeView(wv);
-		}
-		*/
 	}
 	
 	private RemoteViews buildUpdate(Context context) {
@@ -121,10 +106,10 @@ public class OAService extends IntentService {
 		views.setTextViewCompoundDrawables(R.id.txt_tre, ci, 0, 0, 0);
 		
 		views.setOnClickPendingIntent(R.id.txt_voldn, PendingIntent.getBroadcast(context, 0,
-			new Intent(OAReceiver.REQ_VD), 0));
+			new Intent(WR.VOLUME_DOWN), 0));
 		
 		views.setOnClickPendingIntent(R.id.txt_volup, PendingIntent.getBroadcast(context, 0,
-			new Intent(OAReceiver.REQ_VU), 0));
+			new Intent(WR.VOLUME_UP), 0));
 		
 		views.setOnClickPendingIntent(R.id.frm_left, PendingIntent.getActivity(context, 0,
 			new Intent(context, MainActivity.class), 0));
@@ -141,81 +126,4 @@ public class OAService extends IntentService {
 		
 		return views;
 	}
-	
-	/*
-	private WebView wv;
-	
-	@SuppressLint("SetJavaScriptEnabled")
-	private void checkTre() {
-		Log.v(TAG, "checkTre");
-		if (wv == null) {
-			WindowManager wm = (WindowManager) getSystemService(WINDOW_SERVICE);
-			WindowManager.LayoutParams lp = new WindowManager.LayoutParams(WindowManager.LayoutParams.WRAP_CONTENT,
-				WindowManager.LayoutParams.WRAP_CONTENT, WindowManager.LayoutParams.TYPE_PHONE,
-				WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE | WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED,
-				PixelFormat.TRANSLUCENT);
-			lp.gravity = Gravity.TOP | Gravity.START;
-			lp.x = 0;
-			lp.y = 0;
-			lp.width = 200;
-			lp.height = 200;
-			wv = new WebView(getApplicationContext());
-			wv.getSettings().setJavaScriptEnabled(true);
-			wv.addJavascriptInterface(new JSCheck3(), "HTMLOUT");
-			wv.setWebChromeClient(new WebChromeClient());
-			wv.setWebViewClient(new WebViewClient() {
-				@Override
-				public void onPageFinished(WebView view, String url) {
-					Log.v(TAG, "onPageFinished");
-					time3 = System.currentTimeMillis();
-					running3 = false;
-					wv.loadUrl("javascript:window.HTMLOUT.processHTML(document.getElementsByTagName('html')[0].innerHTML);");
-				}
-			});
-			wm.addView(wv, lp);
-		}
-		running3 = true;
-		wv.loadUrl("http://ac3.tre.it/133/costi-e-soglie.jsp");
-	}
-	
-	class JSCheck3 {
-		@JavascriptInterface
-		public void processHTML(String html) {
-			if (TextUtils.isEmpty(html))
-				return;
-			Log.v(TAG, "processHTML");
-			try {
-				Document doc = Jsoup.parse(html);
-				Elements lst = doc.getElementsByClass("box_Credito");
-				String credito = lst.first().child(0).child(0).child(0).text().replace(" ", ""); // formato ok: "999.99€"
-				Log.v(TAG, "credito: " + credito);
-				session.setLast3cred(credito);
-				lst = doc.getElementsByClass("box_Note");
-				String traffico = lst.first().text();
-				traffico = traffico.substring(0, traffico.indexOf("GB ") + 2);
-				traffico = traffico.substring(traffico.lastIndexOf(" ") + 1); // formato ok: "9,99GB"
-				Log.v(TAG, "traffico: " + traffico);
-				session.setLast3traf(traffico);
-			} catch (Exception err) {
-				session.setLast3fail(err.getLocalizedMessage());
-				Log.e(TAG, "processHTML", err);
-				savePage(html);
-			}
-		}
-		public void savePage(String html) {
-			try {
-				File file = new File(Environment.getExternalStorageDirectory(), "testTre.html");
-	            file.createNewFile();
-	            FileOutputStream stream = new FileOutputStream(file);
-	            OutputStreamWriter writer = new OutputStreamWriter(stream);
-	            writer.append(html);
-	            writer.close();
-	            stream.close();
-	            Log.v("parser", "saved testTre.html");
-			} catch (Exception err) {
-				Log.e("parser", "saveTestPage", err);
-			}
-		}
-	}
-	*/
 }

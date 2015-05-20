@@ -16,16 +16,8 @@ public class TimePreference extends DialogPreference {
 	private int lastMinute = 0;
 	private TimePicker picker = null;
 	
-	public TimePreference(Context ctxt) {
-		this(ctxt, null);
-	}
-	
 	public TimePreference(Context ctxt, AttributeSet attrs) {
-		this(ctxt, attrs, 0);
-	}
-	
-	public TimePreference(Context ctxt, AttributeSet attrs, int defStyle) {
-		super(ctxt, attrs, defStyle);
+		super(ctxt, attrs);
 		
 		setPositiveButtonText(R.string.dlg_btn_ok);
 		setNegativeButtonText(R.string.dlg_btn_cancel);

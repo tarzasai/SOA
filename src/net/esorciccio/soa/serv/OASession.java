@@ -74,14 +74,16 @@ public class OASession implements OnSharedPreferenceChangeListener {
 	public static boolean isOnWIFI = false;
 	public static boolean isOn3G = false;
 	public static boolean isRoaming = false;
+	public static String network = "Non connesso";
 	
-	private final String[] daynames;
+	public final String[] dayNames;
+	
 	private final SharedPreferences prefs;
 	
 	public OASession(Context context) {
 		appContext = context.getApplicationContext();
 		
-		daynames = new DateFormatSymbols(Locale.getDefault()).getWeekdays();
+		dayNames = new DateFormatSymbols(Locale.getDefault()).getWeekdays();
 		
 		prefs = PreferenceManager.getDefaultSharedPreferences(appContext);
 		prefs.registerOnSharedPreferenceChangeListener(this);
@@ -100,7 +102,7 @@ public class OASession implements OnSharedPreferenceChangeListener {
 	}
 	
 	public String getDayName(int weekday) {
-		return daynames[weekday];
+		return dayNames[weekday];
 	}
 	
 	public int getDayHours() {
@@ -358,8 +360,6 @@ public class OASession implements OnSharedPreferenceChangeListener {
 		}
 	}
 	
-	public static String network = "Non connesso";
-	
 	public void checkNetwork() {
 		network = "Non connesso";
 		
@@ -372,8 +372,12 @@ public class OASession implements OnSharedPreferenceChangeListener {
 		if (isOnWIFI) {
 			WifiManager wm = (WifiManager) appContext.getSystemService(Context.WIFI_SERVICE);
 			WifiInfo wi = wm.getConnectionInfo();
-			if (wi != null && !TextUtils.isEmpty(wi.getSSID()))
-				network = wi.getSSID().replace("\"", "");
+			if (wi != null) {
+				if (!TextUtils.isEmpty(wi.getSSID()))
+					network = wi.getSSID().replace("\"", "");
+				if (getLastWiFiScan().isEmpty())
+					wm.startScan();
+			}
 		}
 		
 		TelephonyManager tm = (TelephonyManager) appContext.getSystemService(Context.TELEPHONY_SERVICE);
@@ -394,7 +398,6 @@ public class OASession implements OnSharedPreferenceChangeListener {
 	public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
 		if (!(key.equals(PK.ATWRK) || key.equals(PK.ATHOM)))
 			checkAlarms();
-		//checkBluetooth();
 		updateWidget();
 	}
 	

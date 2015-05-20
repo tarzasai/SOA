@@ -1,8 +1,8 @@
 package net.esorciccio.soa.serv;
 
-import net.esorciccio.soa.MainActivity;
 import net.esorciccio.soa.OAWidgetLarge;
 import net.esorciccio.soa.R;
+import net.esorciccio.soa.SettingsActivity;
 import net.esorciccio.soa.serv.OASession.WR;
 import android.app.IntentService;
 import android.app.PendingIntent;
@@ -112,7 +112,7 @@ public class OAService extends IntentService {
 			new Intent(WR.VOLUME_UP), 0));
 		
 		views.setOnClickPendingIntent(R.id.frm_left, PendingIntent.getActivity(context, 0,
-			new Intent(context, MainActivity.class), 0));
+			new Intent(context, SettingsActivity.class), 0));
 		
 		try {
 			Intent clockIntent = new Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_LAUNCHER);

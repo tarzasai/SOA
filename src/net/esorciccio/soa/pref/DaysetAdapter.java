@@ -1,4 +1,4 @@
-package net.esorciccio.soa.data;
+package net.esorciccio.soa.pref;
 
 import net.esorciccio.soa.R;
 import net.esorciccio.soa.R.id;

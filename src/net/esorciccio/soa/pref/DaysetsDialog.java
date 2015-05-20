@@ -1,9 +1,6 @@
 package net.esorciccio.soa.pref;
 
 import net.esorciccio.soa.R;
-import net.esorciccio.soa.R.id;
-import net.esorciccio.soa.R.layout;
-import net.esorciccio.soa.data.DaysetAdapter;
 import net.esorciccio.soa.serv.OASession;
 import android.content.Context;
 import android.preference.DialogPreference;
@@ -18,6 +15,7 @@ public class DaysetsDialog extends DialogPreference {
 	
 	public DaysetsDialog(Context context, AttributeSet attrs) {
 		super(context, attrs);
+		
 		setDialogLayoutResource(R.layout.dialog_daysets);
 		
 		session = OASession.getInstance(context);

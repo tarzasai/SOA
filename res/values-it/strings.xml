@@ -4,21 +4,22 @@
     <string name="app_name">Simple Office Alarms</string>
     <string name="action_reset">Reset data</string>
     <string name="action_settings">Settings</string>
-    <string name="settings_title">SOA Settings</string>
+    <string name="settings_title">Impostazioni SOA</string>
     <string name="shortcut_name">Clear Cache Shortcut</string>
     
     <!-- settings -->
-    <string name="pd_dayset_title">Work hours per day</string>
-    <string name="pd_wifiset_title">Office WiFi</string>
-    <string name="pd_wifibt_title">Home WiFi</string>
-    <string name="pk_round_title">Round at nearest 5 minutes</string>
-    <string name="pc_clean_title">Cleaning alert</string>
-    <string name="pk_clday_title">Cleaning day</string>
-    <string name="pk_cltim_title">Cleaning time</string>
-    <string name="pc_lunch_title">Lunch alerts</string>
-    <string name="pk_lunch_title">Alerts at lunch time begin-end</string>
-    <string name="pk_lstart_title">Lunch time begin</string>
-    <string name="pk_lstop_title">Lunch time end</string>
+    <string name="pd_wifibt_title">Reti WiFi zona casa</string>
+    <string name="pd_wifiset_title">Reti WiFi zona ufficio</string>
+    <string name="pd_dayset_title">Ore lavor. per giorno della settimana</string>
+    <string name="pk_round_title">Arrotonda minuti in ora di arrivo</string>
+    <string name="pk_round_summ">8:56 diventa 8:55, 9:03 diventa 9:00 ecc</string>
+    <string name="pc_clean_title">Allarme pulizie casa</string>
+    <string name="pk_clday_title">Giorno di pulizie</string>
+    <string name="pk_cltim_title">Ora di inizio</string>
+    <string name="pc_lunch_title">Pausa pranzo</string>
+    <string name="pk_lunch_title">Attiva allarmi pausa pranzo</string>
+    <string name="pk_lstart_title">Inizio pausa</string>
+    <string name="pk_lstop_title">Fine pausa</string>
     
     <!-- labels -->
     <string name="txt_empty"></string>

@@ -159,22 +159,18 @@ public class OASession implements OnSharedPreferenceChangeListener {
 	}
 	
 	public void checkLocation() {
-		boolean oldAtWork = getAtWork();
-		boolean oldAtHome = getAtHome();
-		boolean newAtWork = false;
-		boolean newAtHome = false;
+		boolean atWork = false;
 		Set<String> workWiFis = getPrefs().getStringSet(PK.WFWRK, new HashSet<String>());
 		Set<String> homeWiFis = getPrefs().getStringSet(PK.WFHOM, new HashSet<String>());
 		for (String ssid : getLastWiFiScan()) {
 			if (workWiFis.contains(ssid)) {
-				newAtWork = true;
+				atWork = true;
 				SharedPreferences.Editor editor = prefs.edit();
 				editor.putBoolean(PK.ATWRK, true);
 				editor.putBoolean(PK.ATHOM, false);
 				editor.commit();
 				break;
 			} else if (homeWiFis.contains(ssid)) {
-				newAtHome = true;
 				SharedPreferences.Editor editor = prefs.edit();
 				editor.putBoolean(PK.ATWRK, false);
 				editor.putBoolean(PK.ATHOM, true);
@@ -182,17 +178,14 @@ public class OASession implements OnSharedPreferenceChangeListener {
 				break;
 			}
 		}
-		if (newAtWork != oldAtWork) {
-			if (newAtWork) {
-				if (getArrival() <= 0)
-					setArrival(System.currentTimeMillis());
-				else
-					setLeft(0);
-			} else if (getArrival() > 0 && getLeft() <= 0)
-				setLeft(System.currentTimeMillis());
-			checkAlarms();
-		} else if (newAtHome != oldAtHome)
-			checkAlarms();
+		if (atWork) {
+			if (getArrival() <= 0)
+				setArrival(System.currentTimeMillis());
+			else
+				setLeft(0);
+		} else if (getArrival() > 0 && getLeft() <= 0)
+			setLeft(System.currentTimeMillis());
+		checkAlarms();
 	}
 	
 	public long getArrival() {

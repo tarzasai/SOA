@@ -39,7 +39,7 @@ public class OAReceiver extends BroadcastReceiver {
 	private static Notification getNotif(Context context, String title, String text) {
 		Toast.makeText(context, title, Toast.LENGTH_LONG).show();
 		return new NotificationCompat.Builder(context).setSound(NOTIF_SOUND).setSmallIcon(R.drawable.notif_alarm)
-			.setContentTitle(title).setContentText(text).build();
+			.setContentTitle(title).setContentText(text).setAutoCancel(true).build();
 	}
 
 	@Override
@@ -65,9 +65,7 @@ public class OAReceiver extends BroadcastReceiver {
 			// questi vengono dai timer
 			case OASession.AC.ENTER:
 				nm.notify(NOTIF_ENTER, getNotif(context, context.getString(R.string.msg_enter_title),
-					context.getString(R.string.msg_enter_text) + " " +
-						DateUtils.getRelativeTimeSpanString(session.getLeaving(), System.currentTimeMillis(),
-							DateUtils.MINUTE_IN_MILLIS).toString()));
+					context.getString(R.string.msg_enter_text) + " " + OASession.timeString(session.getLeaving())));
 				break;
 			case OASession.AC.LEAVE:
 				nm.notify(NOTIF_LEAVE, getNotif(context, context.getString(R.string.msg_leave_title),
@@ -93,7 +91,7 @@ public class OAReceiver extends BroadcastReceiver {
 			case OASession.AC.CLEAN:
 				nm.notify(NOTIF_CLEAN, getNotif(context, R.string.msg_clean_title, R.string.msg_clean_text));
 				break;
-			// comandi dal widget/shortcut
+			// comandi dal widget
 			case WR.VOLUME_UP:
 				audioMan(context).adjustStreamVolume(AudioManager.STREAM_MUSIC, AudioManager.ADJUST_RAISE, VFLAGS);
 				break;

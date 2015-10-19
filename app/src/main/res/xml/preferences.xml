@@ -32,7 +32,7 @@
         android:title="@string/pc_clean_title" >
 	    
         <net.esorciccio.soa.pref.IntListPreference
-            android:defaultValue="3"
+            android:defaultValue="0"
             android:key="pk_cleanday"
             android:title="@string/pk_clday_title"
             android:dialogTitle="@string/pk_clday_title"

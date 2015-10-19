@@ -254,7 +254,7 @@ public class OASession implements OnSharedPreferenceChangeListener {
 	}
 
 	public long getLunchBegin() {
-		String[] tp = getPrefs().getString(PK.BLUNC, "13:00").split(":");
+		String[] tp = getPrefs().getString(PK.BLUNC, "13:30").split(":");
 		Calendar cal = Calendar.getInstance();
 		cal.setTimeInMillis(System.currentTimeMillis());
 		cal.set(Calendar.HOUR_OF_DAY, Integer.parseInt(tp[0]));
@@ -265,7 +265,7 @@ public class OASession implements OnSharedPreferenceChangeListener {
 	}
 
 	public long getLunchEnd() {
-		String[] tp = getPrefs().getString(PK.ELUNC, "14:00").split(":");
+		String[] tp = getPrefs().getString(PK.ELUNC, "14:30").split(":");
 		Calendar cal = Calendar.getInstance();
 		cal.setTimeInMillis(System.currentTimeMillis());
 		cal.set(Calendar.HOUR_OF_DAY, Integer.parseInt(tp[0]));
@@ -327,7 +327,8 @@ public class OASession implements OnSharedPreferenceChangeListener {
 				break;
 			}
 		if (atWork) {
-			if (getArrival() <= 0)
+			long a = getArrival();
+			if (a <= 0 || a >= System.currentTimeMillis())
 				setArrival(System.currentTimeMillis());
 			else
 				setLeft(0);
@@ -413,11 +414,11 @@ public class OASession implements OnSharedPreferenceChangeListener {
 				break;
 			case PK.ARRIV:
 				checkAlarms();
-				appContext.sendBroadcast(new Intent(AC.ENTER));
+				appContext.sendBroadcast(new Intent(appContext, OAReceiver.class).setAction(AC.ENTER));
 				break;
 			case PK.LEAVE:
 				checkAlarms();
-				appContext.sendBroadcast(new Intent(AC.LEFTW));
+				appContext.sendBroadcast(new Intent(appContext, OAReceiver.class).setAction(AC.LEFTW));
 				break;
 			case PK.LUNCH:
 			case PK.BLUNC:

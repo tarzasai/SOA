@@ -63,6 +63,11 @@
                 android:resource="@xml/widget_large_info" />
         </receiver>
 
+        <service
+            android:name=".serv.OAService"
+            android:exported="false" >
+        </service>
+
     </application>
 
 </manifest>

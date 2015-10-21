@@ -340,34 +340,37 @@ public class OASession implements OnSharedPreferenceChangeListener {
 		PendingIntent bi = mkPI(AC.BLUNC);
 		PendingIntent ei = mkPI(AC.ELUNC);
 		PendingIntent ci = mkPI(AC.CLEAN);
+		long st = System.currentTimeMillis();
 		long at = getArrival();
 		long lt = getLeaving();
 		long bt = getLunchBegin();
 		long et = getLunchEnd();
-		if (!(getAtWork() && at > 0 && lt > System.currentTimeMillis())) {
+		if (!(getAtWork() && at > 0 && lt > st)) {
 			am.cancel(li);
 			Log.v(getClass().getSimpleName(), "leaving alarm canceled");
 		} else {
-			am.setRepeating(AlarmManager.RTC_WAKEUP, lt, AlarmManager.INTERVAL_HALF_HOUR, li);
+			am.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, lt, li);
+			am.setRepeating(AlarmManager.RTC_WAKEUP, lt + AlarmManager.INTERVAL_FIFTEEN_MINUTES,
+				AlarmManager.INTERVAL_FIFTEEN_MINUTES, li);
 			Log.v(getClass().getSimpleName(), "leaving alarm set to " + timeString(lt));
 		}
-		if (!(getLunchAlerts() && at > 0 && lt > System.currentTimeMillis())) {
+		if (!(getLunchAlerts() && at > 0 && lt > st)) {
 			am.cancel(bi);
 			am.cancel(ei);
 			Log.v(getClass().getSimpleName(), "lunch alarms canceled");
 		} else {
-			if (bt < System.currentTimeMillis()) {
+			if (bt < st) {
 				am.cancel(bi);
 				Log.v(getClass().getSimpleName(), "lunch begin alarm canceled");
 			} else {
-				am.set(AlarmManager.RTC_WAKEUP, bt, bi);
+				am.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, bt, bi);
 				Log.v(getClass().getSimpleName(), "lunch begin alarm set to " + timeString(bt));
 			}
-			if (et < System.currentTimeMillis()) {
+			if (et < st) {
 				am.cancel(ei);
 				Log.v(getClass().getSimpleName(), "lunch end alarm canceled");
 			} else {
-				am.set(AlarmManager.RTC_WAKEUP, et, ei);
+				am.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, et, ei);
 				Log.v(getClass().getSimpleName(), "lunch end alarm set to " + timeString(et));
 			}
 		}
@@ -376,16 +379,17 @@ public class OASession implements OnSharedPreferenceChangeListener {
 			Log.v(getClass().getSimpleName(), "cleaning alarm canceled");
 		} else {
 			long ct = getCleanTime();
-			if (System.currentTimeMillis() >= ct) {
+			if (st >= ct) {
 				am.cancel(ci);
 				Log.v(getClass().getSimpleName(), "cleaning alarm canceled");
 			} else {
 				Calendar cal = Calendar.getInstance();
 				cal.setTimeInMillis(ct);
-				cal.add(Calendar.MINUTE, -40);
+				cal.add(Calendar.MINUTE, -30);
 				ct = cal.getTimeInMillis();
-				if (ct > System.currentTimeMillis()) {
-					am.setRepeating(AlarmManager.RTC_WAKEUP, ct, (getAtWork() ? 5 : 10) * 60000, ci);
+				if (ct > st) {
+					am.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, ct, bi);
+					am.setRepeating(AlarmManager.RTC_WAKEUP, ct + 600000, 600000, ci);
 					Log.v(getClass().getSimpleName(), "cleaning alarm set to " + timeString(ct));
 				}
 			}
@@ -402,6 +406,7 @@ public class OASession implements OnSharedPreferenceChangeListener {
 
 	@Override
 	public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
+		AlarmManager am = (AlarmManager) appContext.getSystemService(Context.ALARM_SERVICE);
 		switch (key) {
 			case PK.WSCAN:
 			case PK.WFWRK:
@@ -411,13 +416,11 @@ public class OASession implements OnSharedPreferenceChangeListener {
 				break;
 			case PK.ARRIV:
 				checkAlarms();
-				((AlarmManager) appContext.getSystemService(Context.ALARM_SERVICE)).set(AlarmManager.RTC_WAKEUP,
-					System.currentTimeMillis() + 2000, mkPI(AC.ENTER));
+				am.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, System.currentTimeMillis() + 1500, mkPI(AC.ENTER));
 				break;
 			case PK.LEAVE:
 				checkAlarms();
-				((AlarmManager) appContext.getSystemService(Context.ALARM_SERVICE)).set(AlarmManager.RTC_WAKEUP,
-					System.currentTimeMillis() + 2000, mkPI(AC.LEFTW));
+				am.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, System.currentTimeMillis() + 1500, mkPI(AC.LEFTW));
 				break;
 			case PK.LUNCH:
 			case PK.BLUNC:

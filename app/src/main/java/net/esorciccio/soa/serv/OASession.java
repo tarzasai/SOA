@@ -48,10 +48,7 @@ public class OASession implements OnSharedPreferenceChangeListener {
 		Manifest.permission.READ_PHONE_STATE,
 		//
 		Manifest.permission.BLUETOOTH,
-		Manifest.permission.BLUETOOTH_ADMIN/*,
-		//
-		Manifest.permission.READ_EXTERNAL_STORAGE,
-		Manifest.permission.WRITE_EXTERNAL_STORAGE*/
+		Manifest.permission.BLUETOOTH_ADMIN
 	};
 
 	public static boolean isOnWIFI = false;
@@ -414,11 +411,13 @@ public class OASession implements OnSharedPreferenceChangeListener {
 				break;
 			case PK.ARRIV:
 				checkAlarms();
-				appContext.sendBroadcast(new Intent(appContext, OAReceiver.class).setAction(AC.ENTER));
+				((AlarmManager) appContext.getSystemService(Context.ALARM_SERVICE)).set(AlarmManager.RTC_WAKEUP,
+					System.currentTimeMillis() + 2000, mkPI(AC.ENTER));
 				break;
 			case PK.LEAVE:
 				checkAlarms();
-				appContext.sendBroadcast(new Intent(appContext, OAReceiver.class).setAction(AC.LEFTW));
+				((AlarmManager) appContext.getSystemService(Context.ALARM_SERVICE)).set(AlarmManager.RTC_WAKEUP,
+					System.currentTimeMillis() + 2000, mkPI(AC.LEFTW));
 				break;
 			case PK.LUNCH:
 			case PK.BLUNC:

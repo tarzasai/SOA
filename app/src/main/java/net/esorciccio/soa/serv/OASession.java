@@ -147,14 +147,6 @@ public class OASession implements OnSharedPreferenceChangeListener {
 		editor.commit();
 	}
 
-	public boolean getAtWork() {
-		return getPrefs().getBoolean(PK.ATWRK, false);
-	}
-
-	public boolean getAtHome() {
-		return getPrefs().getBoolean(PK.ATHOM, false);
-	}
-
 	public Set<String> getLastWiFiScan() {
 		return getPrefs().getStringSet(PK.WSCAN, new HashSet<String>());
 	}
@@ -197,6 +189,7 @@ public class OASession implements OnSharedPreferenceChangeListener {
 		Log.v(getClass().getSimpleName(), "setArrival");
 		SharedPreferences.Editor editor = prefs.edit();
 		editor.putLong(PK.ARRIV, value);
+		editor.putLong(PK.LEAVE, 0);
 		editor.commit();
 	}
 
@@ -235,7 +228,9 @@ public class OASession implements OnSharedPreferenceChangeListener {
 		return getPrefs().getInt(PK.CLDAY, 0);
 	}
 
-	public long getCleanTime() {
+	public long getCleanAlarmTime() {
+		if (getWeekDay() != getCleanDay())
+			return 0;
 		String[] tp = getPrefs().getString(PK.CLTIM, "18:00").split(":");
 		Calendar cal = Calendar.getInstance();
 		cal.setTimeInMillis(System.currentTimeMillis());
@@ -243,6 +238,7 @@ public class OASession implements OnSharedPreferenceChangeListener {
 		cal.set(Calendar.MINUTE, Integer.parseInt(tp[1]));
 		cal.set(Calendar.SECOND, 0);
 		cal.set(Calendar.MILLISECOND, 0);
+		cal.add(Calendar.MINUTE, -30); // mezz'ora prima
 		return cal.getTimeInMillis();
 	}
 
@@ -305,32 +301,32 @@ public class OASession implements OnSharedPreferenceChangeListener {
 	}
 
 	public void checkLocation() {
-		boolean atWork = false;
 		Set<String> workWiFis = getPrefs().getStringSet(PK.WFWRK, new HashSet<String>());
 		Set<String> homeWiFis = getPrefs().getStringSet(PK.WFHOM, new HashSet<String>());
-		for (String ssid : getLastWiFiScan())
+		boolean work = false;
+		for (String ssid : getLastWiFiScan()) {
 			if (workWiFis.contains(ssid)) {
-				atWork = true;
-				SharedPreferences.Editor editor = prefs.edit();
-				editor.putBoolean(PK.ATWRK, true);
-				editor.putBoolean(PK.ATHOM, false);
-				editor.commit();
-				break;
-			} else if (homeWiFis.contains(ssid)) {
-				SharedPreferences.Editor editor = prefs.edit();
-				editor.putBoolean(PK.ATWRK, false);
-				editor.putBoolean(PK.ATHOM, true);
-				editor.commit();
+				work = true;
 				break;
 			}
-		if (atWork) {
-			long a = getArrival();
-			if (a <= 0 || a >= System.currentTimeMillis())
-				setArrival(System.currentTimeMillis());
-			else
+			if (homeWiFis.contains(ssid)) {
+				/*SharedPreferences.Editor editor = prefs.edit();
+				editor.putBoolean(PK.ATWRK, false);
+				editor.putBoolean(PK.ATHOM, true);
+				editor.commit();*/
+				break;
+			}
+		}
+		long st = System.currentTimeMillis();
+		long at = getArrival();
+		long lt = getLeft();
+		if (work) {
+			if (at <= 0) // sono arrivato in ufficio
+				setArrival(st);
+			else if (lt > 0) // ero uscito ma sono rientrato (pranzo)
 				setLeft(0);
-		} else if (getArrival() > 0 && getLeft() <= 0)
-			setLeft(System.currentTimeMillis());
+		} else if (at > 0 && lt <= 0) // sono uscito
+			setLeft(st);
 	}
 
 	public void checkAlarms() {
@@ -345,54 +341,45 @@ public class OASession implements OnSharedPreferenceChangeListener {
 		long lt = getLeaving();
 		long bt = getLunchBegin();
 		long et = getLunchEnd();
-		if (!(getAtWork() && at > 0 && lt > st)) {
-			am.cancel(li);
-			Log.v(getClass().getSimpleName(), "leaving alarm canceled");
-		} else {
+		// allarmi uscita e pranzo
+		if (at > 0 && lt > st) {
 			am.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, lt, li);
 			am.setRepeating(AlarmManager.RTC_WAKEUP, lt + AlarmManager.INTERVAL_FIFTEEN_MINUTES,
 				AlarmManager.INTERVAL_FIFTEEN_MINUTES, li);
 			Log.v(getClass().getSimpleName(), "leaving alarm set to " + timeString(lt));
-		}
-		if (!(getLunchAlerts() && at > 0 && lt > st)) {
+			if (getLunchAlerts()) {
+				if (bt < st) {
+					am.cancel(bi);
+					Log.v(getClass().getSimpleName(), "lunch begin alarm canceled");
+				} else {
+					am.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, bt, bi);
+					Log.v(getClass().getSimpleName(), "lunch begin alarm set to " + timeString(bt));
+				}
+				if (et < st) {
+					am.cancel(ei);
+					Log.v(getClass().getSimpleName(), "lunch end alarm canceled");
+				} else {
+					am.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, et, ei);
+					Log.v(getClass().getSimpleName(), "lunch end alarm set to " + timeString(et));
+				}
+			}
+		} else {
+			am.cancel(li);
+			Log.v(getClass().getSimpleName(), "leaving alarm canceled");
 			am.cancel(bi);
 			am.cancel(ei);
 			Log.v(getClass().getSimpleName(), "lunch alarms canceled");
-		} else {
-			if (bt < st) {
-				am.cancel(bi);
-				Log.v(getClass().getSimpleName(), "lunch begin alarm canceled");
-			} else {
-				am.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, bt, bi);
-				Log.v(getClass().getSimpleName(), "lunch begin alarm set to " + timeString(bt));
-			}
-			if (et < st) {
-				am.cancel(ei);
-				Log.v(getClass().getSimpleName(), "lunch end alarm canceled");
-			} else {
-				am.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, et, ei);
-				Log.v(getClass().getSimpleName(), "lunch end alarm set to " + timeString(et));
-			}
 		}
-		if (getWeekDay() != getCleanDay()) {
+		// allarme pulizie
+		long ct = getCleanAlarmTime();
+		if (ct > st) {
+			am.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, ct, bi); // è già mezz'ora prima
+			am.setRepeating(AlarmManager.RTC_WAKEUP, ct + AlarmManager.INTERVAL_FIFTEEN_MINUTES,
+				AlarmManager.INTERVAL_FIFTEEN_MINUTES, ci);
+			Log.v(getClass().getSimpleName(), "cleaning alarm set to " + timeString(ct));
+		} else {
 			am.cancel(ci);
 			Log.v(getClass().getSimpleName(), "cleaning alarm canceled");
-		} else {
-			long ct = getCleanTime();
-			if (st >= ct) {
-				am.cancel(ci);
-				Log.v(getClass().getSimpleName(), "cleaning alarm canceled");
-			} else {
-				Calendar cal = Calendar.getInstance();
-				cal.setTimeInMillis(ct);
-				cal.add(Calendar.MINUTE, -30);
-				ct = cal.getTimeInMillis();
-				if (ct > st) {
-					am.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, ct, bi);
-					am.setRepeating(AlarmManager.RTC_WAKEUP, ct + 600000, 600000, ci);
-					Log.v(getClass().getSimpleName(), "cleaning alarm set to " + timeString(ct));
-				}
-			}
 		}
 		updateWidget();
 	}
@@ -454,8 +441,6 @@ public class OASession implements OnSharedPreferenceChangeListener {
 		public static final String CLDAY = "pk_cleanday";
 		public static final String CLTIM = "pk_cleantime";
 		// no checkalarms:
-		public static final String ATWRK = "pk_at_office";
-		public static final String ATHOM = "pk_at_house";
 		public static final String WSCAN = "pk_last_scan";
 	}
 

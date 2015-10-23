@@ -35,6 +35,7 @@ import java.util.Locale;
 import java.util.Set;
 
 public class OASession implements OnSharedPreferenceChangeListener {
+	private static final String TAG = "OASession";
 
 	private static final String[] PERMLIST = {
 		//
@@ -129,7 +130,7 @@ public class OASession implements OnSharedPreferenceChangeListener {
 	}
 
 	public void setWeekHours(int[] daysets) {
-		Log.v(getClass().getSimpleName(), "setWeekHours");
+		Log.v(TAG, "setWeekHours");
 		SharedPreferences.Editor editor = prefs.edit();
 		for (int i = 0; i < daysets.length; i++)
 			editor.putInt(PK.HOURS + Integer.toString(i + 2), daysets[i]);
@@ -141,7 +142,7 @@ public class OASession implements OnSharedPreferenceChangeListener {
 	}
 
 	public void setWifiSet(String wifiPref, Set<String> ssids) {
-		Log.v(getClass().getSimpleName(), "setWifiSet");
+		Log.v(TAG, "setWifiSet");
 		SharedPreferences.Editor editor = prefs.edit();
 		editor.putStringSet(wifiPref, ssids);
 		editor.commit();
@@ -153,10 +154,12 @@ public class OASession implements OnSharedPreferenceChangeListener {
 
 	public void setLastWiFiScan(List<ScanResult> networks) {
 		SharedPreferences.Editor editor = getPrefs().edit();
+		editor.putLong(PK.TSCAN, System.currentTimeMillis());
 		if (networks != null) {
 			Set<String> values = new HashSet<>();
 			for (ScanResult sr : networks)
-				values.add(sr.SSID);
+				if (!TextUtils.isEmpty(sr.SSID))
+					values.add(sr.SSID);
 			editor.putStringSet(PK.WSCAN, values);
 		} else
 			editor.remove(PK.WSCAN);
@@ -186,7 +189,7 @@ public class OASession implements OnSharedPreferenceChangeListener {
 		if (value == getArrival())
 			return;
 
-		Log.v(getClass().getSimpleName(), "setArrival");
+		Log.v(TAG, "setArrival");
 		SharedPreferences.Editor editor = prefs.edit();
 		editor.putLong(PK.ARRIV, value);
 		editor.putLong(PK.LEAVE, 0);
@@ -204,7 +207,7 @@ public class OASession implements OnSharedPreferenceChangeListener {
 		if (value == getLeft())
 			return;
 
-		Log.v(getClass().getSimpleName(), "setLeaving");
+		Log.v(TAG, "setLeaving");
 		SharedPreferences.Editor editor = prefs.edit();
 		editor.putLong(PK.LEAVE, value);
 		editor.commit();
@@ -297,14 +300,17 @@ public class OASession implements OnSharedPreferenceChangeListener {
 				}
 			}
 		}
+		Log.d(TAG, "checkNetwork(): " + network);
 		updateWidget();
 	}
 
 	public void checkLocation() {
 		Set<String> workWiFis = getPrefs().getStringSet(PK.WFWRK, new HashSet<String>());
 		Set<String> homeWiFis = getPrefs().getStringSet(PK.WFHOM, new HashSet<String>());
+		Set<String> scanWiFis = getLastWiFiScan();
+		Log.d(TAG, "checkLocation(): " + TextUtils.join(", ", scanWiFis));
 		boolean work = false;
-		for (String ssid : getLastWiFiScan()) {
+		for (String ssid : scanWiFis) {
 			if (workWiFis.contains(ssid)) {
 				work = true;
 				break;
@@ -330,7 +336,7 @@ public class OASession implements OnSharedPreferenceChangeListener {
 	}
 
 	public void checkAlarms() {
-		Log.v(getClass().getSimpleName(), "resetAlarms");
+		Log.v(TAG, "resetAlarms()");
 		AlarmManager am = (AlarmManager) appContext.getSystemService(Context.ALARM_SERVICE);
 		PendingIntent li = mkPI(AC.LEAVE);
 		PendingIntent bi = mkPI(AC.BLUNC);
@@ -346,29 +352,29 @@ public class OASession implements OnSharedPreferenceChangeListener {
 			am.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, lt, li);
 			am.setRepeating(AlarmManager.RTC_WAKEUP, lt + AlarmManager.INTERVAL_FIFTEEN_MINUTES,
 				AlarmManager.INTERVAL_FIFTEEN_MINUTES, li);
-			Log.v(getClass().getSimpleName(), "leaving alarm set to " + timeString(lt));
+			Log.v(TAG, "leaving alarm set to " + timeString(lt));
 			if (getLunchAlerts()) {
 				if (bt < st) {
 					am.cancel(bi);
-					Log.v(getClass().getSimpleName(), "lunch begin alarm canceled");
+					Log.v(TAG, "lunch begin alarm canceled");
 				} else {
 					am.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, bt, bi);
-					Log.v(getClass().getSimpleName(), "lunch begin alarm set to " + timeString(bt));
+					Log.v(TAG, "lunch begin alarm set to " + timeString(bt));
 				}
 				if (et < st) {
 					am.cancel(ei);
-					Log.v(getClass().getSimpleName(), "lunch end alarm canceled");
+					Log.v(TAG, "lunch end alarm canceled");
 				} else {
 					am.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, et, ei);
-					Log.v(getClass().getSimpleName(), "lunch end alarm set to " + timeString(et));
+					Log.v(TAG, "lunch end alarm set to " + timeString(et));
 				}
 			}
 		} else {
 			am.cancel(li);
-			Log.v(getClass().getSimpleName(), "leaving alarm canceled");
+			Log.v(TAG, "leaving alarm canceled");
 			am.cancel(bi);
 			am.cancel(ei);
-			Log.v(getClass().getSimpleName(), "lunch alarms canceled");
+			Log.v(TAG, "lunch alarms canceled");
 		}
 		// allarme pulizie
 		long ct = getCleanAlarmTime();
@@ -376,10 +382,10 @@ public class OASession implements OnSharedPreferenceChangeListener {
 			am.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, ct, bi); // è già mezz'ora prima
 			am.setRepeating(AlarmManager.RTC_WAKEUP, ct + AlarmManager.INTERVAL_FIFTEEN_MINUTES,
 				AlarmManager.INTERVAL_FIFTEEN_MINUTES, ci);
-			Log.v(getClass().getSimpleName(), "cleaning alarm set to " + timeString(ct));
+			Log.v(TAG, "cleaning alarm set to " + timeString(ct));
 		} else {
 			am.cancel(ci);
-			Log.v(getClass().getSimpleName(), "cleaning alarm canceled");
+			Log.v(TAG, "cleaning alarm canceled");
 		}
 		updateWidget();
 	}
@@ -441,6 +447,7 @@ public class OASession implements OnSharedPreferenceChangeListener {
 		public static final String CLDAY = "pk_cleanday";
 		public static final String CLTIM = "pk_cleantime";
 		// no checkalarms:
+		public static final String TSCAN = "pk_time_scan";
 		public static final String WSCAN = "pk_last_scan";
 	}
 

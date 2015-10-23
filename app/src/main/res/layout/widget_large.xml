@@ -17,7 +17,7 @@
         android:paddingLeft="2dp">
 
         <TextView
-            android:id="@+id/txt_arrival"
+            android:id="@+id/txt_enter"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:contentDescription="@string/txt_empty"

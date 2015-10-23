@@ -8,25 +8,28 @@
     <string name="shortcut_name">Clear Cache Shortcut</string>
     
     <!-- settings -->
+    <string name="pc_clean_title">Allarme pulizie casa</string>
+    <string name="pc_lunch_title">Pausa pranzo</string>
+    <string name="pd_dayset_title">Ore lavor. per giorno della settimana</string>
     <string name="pd_wifibt_title">Reti WiFi zona casa</string>
     <string name="pd_wifiset_title">Reti WiFi zona ufficio</string>
-    <string name="pd_dayset_title">Ore lavor. per giorno della settimana</string>
-    <string name="pk_round_title">Arrotonda minuti in ora di arrivo</string>
-    <string name="pk_round_summ">8:56 diventa 8:55, 9:03 diventa 9:00 ecc</string>
-    <string name="pc_clean_title">Allarme pulizie casa</string>
     <string name="pk_clday_title">Giorno di pulizie</string>
     <string name="pk_cltim_title">Ora di inizio</string>
-    <string name="pc_lunch_title">Pausa pranzo</string>
-    <string name="pk_lunch_title">Attiva allarmi pausa pranzo</string>
     <string name="pk_lstart_title">Inizio pausa</string>
     <string name="pk_lstop_title">Fine pausa</string>
+    <string name="pk_lunch_title">Attiva allarmi pausa pranzo</string>
+    <string name="pk_round_summ">8:56 diventa 8:55, 9:03 diventa 9:00 ecc</string>
+    <string name="pk_round_title">Arrotonda minuti in ora di arrivo</string>
     
     <!-- labels -->
-    <string name="txt_empty"></string>
+    <string name="txt_empty"/>
     <string name="txt_hours">ore</string>
     <string name="lbl_arrival">Sei entrato alle:</string>
     <string name="lbl_leaving">Devi uscire alle:</string>
     <string name="lbl_tmpleft">Sei uscito alle:</string>
+    <string name="lbl_debug">DEBUG</string>
+    <string name="lbl_tscan">Ultima scansione:</string>
+    <string name="lbl_lscan">WIFI trovate:</string>
     <string name="dlg_btn_ok">OK</string>
     <string name="dlg_btn_cancel">Cancel</string>
     

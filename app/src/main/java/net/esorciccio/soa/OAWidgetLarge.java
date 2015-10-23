@@ -18,7 +18,7 @@ public class OAWidgetLarge extends AppWidgetProvider {
 
 		RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.widget_large);
 
-		views.setTextViewText(R.id.txt_arrival, OASession.timeString(session.getArrival()));
+		views.setTextViewText(R.id.txt_enter, OASession.timeString(session.getArrival()));
 
 		long ttogo = session.getLeaving();
 		long tleft = session.getLeft();

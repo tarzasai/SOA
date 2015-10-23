@@ -8,17 +8,18 @@
     <string name="shortcut_name">Clear Cache Shortcut</string>
     
     <!-- settings -->
-    <string name="pd_dayset_title">Work hours per day</string>
-    <string name="pd_wifiset_title">Office WiFi</string>
-    <string name="pd_wifibt_title">Home WiFi</string>
-    <string name="pk_round_title">Round at nearest 5 minutes</string>
     <string name="pc_clean_title">Cleaning alert</string>
+    <string name="pc_lunch_title">Lunch alerts</string>
+    <string name="pd_dayset_title">Work hours per day</string>
+    <string name="pd_wifibt_title">Home WiFi</string>
+    <string name="pd_wifiset_title">Office WiFi</string>
     <string name="pk_clday_title">Cleaning day</string>
     <string name="pk_cltim_title">Cleaning time</string>
-    <string name="pc_lunch_title">Lunch alerts</string>
-    <string name="pk_lunch_title">Alerts at lunch time begin-end</string>
     <string name="pk_lstart_title">Lunch time begin</string>
     <string name="pk_lstop_title">Lunch time end</string>
+    <string name="pk_lunch_title">Alerts at lunch time begin-end</string>
+    <string name="pk_round_summ">8:56 becomes 8:55, 9:03 becomes 9:00 etc</string>
+    <string name="pk_round_title">Round at nearest 5 minutes</string>
     
     <!-- labels -->
     <string name="txt_empty"/>
@@ -26,6 +27,9 @@
     <string name="lbl_arrival">Arrival:</string>
     <string name="lbl_leaving">Leave at:</string>
     <string name="lbl_tmpleft">Actual left:</string>
+    <string name="lbl_debug">DEBUG</string>
+    <string name="lbl_tscan">Last scan:</string>
+    <string name="lbl_lscan">Found WIFIs:</string>
     <string name="dlg_btn_ok">OK</string>
     <string name="dlg_btn_cancel">Cancel</string>
     

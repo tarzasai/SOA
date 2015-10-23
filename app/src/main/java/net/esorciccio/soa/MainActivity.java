@@ -11,6 +11,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -27,6 +28,8 @@ public class MainActivity extends Activity implements OnSharedPreferenceChangeLi
 	private TextView txtLeaving;
 	private TextView txtTmpLeft;
 	private TableRow rowTmpLeft;
+	private TextView txtScanTim;
+	private TextView txtScanRes;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -39,10 +42,12 @@ public class MainActivity extends Activity implements OnSharedPreferenceChangeLi
 		else
 			session.checkLocation();
 
-		txtArrival = (TextView) findViewById(R.id.txt_arrival);
+		txtArrival = (TextView) findViewById(R.id.txt_enter);
 		txtLeaving = (TextView) findViewById(R.id.txt_leave);
 		txtTmpLeft = (TextView) findViewById(R.id.txt_left);
 		rowTmpLeft = (TableRow) findViewById(R.id.row_left);
+		txtScanTim = (TextView) findViewById(R.id.txt_tscan);
+		txtScanRes = (TextView) findViewById(R.id.txt_lscan);
 	}
 
 	@Override
@@ -111,5 +116,7 @@ public class MainActivity extends Activity implements OnSharedPreferenceChangeLi
 		txtLeaving.setText(OASession.timeString(session.getLeaving()));
 		txtTmpLeft.setText(OASession.timeString(session.getLeft()));
 		rowTmpLeft.setVisibility(session.getLeft() <= 0 ? View.GONE : View.VISIBLE);
+		txtScanTim.setText(OASession.timeString(session.getPrefs().getLong(OASession.PK.TSCAN, 0)));
+		txtScanRes.setText(TextUtils.join("\n", session.getLastWiFiScan()));
 	}
 }

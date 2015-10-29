@@ -28,7 +28,7 @@ public class DaysetAdapter extends BaseAdapter {
 		inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 		
 		hours = new ArrayAdapter<>(context, android.R.layout.simple_spinner_item,
-				new Integer[]{0, 4, 5, 6, 7, 8});
+				new Integer[]{0, 1, 2, 3, 4, 5, 6, 7, 8});
 		hours.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 		
 		daysets = session.getWeekHours();

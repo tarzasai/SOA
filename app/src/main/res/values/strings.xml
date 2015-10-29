@@ -30,6 +30,7 @@
     <string name="lbl_debug">DEBUG</string>
     <string name="lbl_tscan">Last scan:</string>
     <string name="lbl_lscan">Found WIFIs:</string>
+    <string name="lbl_dtext">Last note:</string>
     <string name="dlg_btn_ok">OK</string>
     <string name="dlg_btn_cancel">Cancel</string>
     

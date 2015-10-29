@@ -22,7 +22,8 @@
     <Spinner
         android:id="@+id/spi_dayset"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />
+        android:layout_height="wrap_content"
+        android:spinnerMode="dropdown"/>
 
     <TextView
         android:layout_width="wrap_content"

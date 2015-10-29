@@ -1,16 +1,15 @@
 package net.esorciccio.soa;
 
-import java.util.Calendar;
-
-import net.esorciccio.soa.serv.OASession;
-
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
+import android.net.Uri;
 import android.os.Bundle;
+import android.os.PowerManager;
+import android.provider.Settings;
 import android.text.TextUtils;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -19,6 +18,10 @@ import android.widget.EditText;
 import android.widget.TableRow;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import net.esorciccio.soa.serv.OASession;
+
+import java.util.Calendar;
 
 public class MainActivity extends Activity implements OnSharedPreferenceChangeListener {
 
@@ -30,11 +33,18 @@ public class MainActivity extends Activity implements OnSharedPreferenceChangeLi
 	private TableRow rowTmpLeft;
 	private TextView txtScanTim;
 	private TextView txtScanRes;
+	private TextView txtDbgText;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
+
+		String pkg = getPackageName();
+		PowerManager pm = getSystemService(PowerManager.class);
+		if (!pm.isIgnoringBatteryOptimizations(pkg))
+			startActivity(new Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS).setData(Uri.parse(
+				"package:" + pkg)));
 
 		session = OASession.getInstance(this);
 		if (session.getLastWiFiScan().isEmpty())
@@ -48,6 +58,7 @@ public class MainActivity extends Activity implements OnSharedPreferenceChangeLi
 		rowTmpLeft = (TableRow) findViewById(R.id.row_left);
 		txtScanTim = (TextView) findViewById(R.id.txt_tscan);
 		txtScanRes = (TextView) findViewById(R.id.txt_lscan);
+		txtDbgText = (TextView) findViewById(R.id.txt_dtext);
 	}
 
 	@Override
@@ -118,5 +129,6 @@ public class MainActivity extends Activity implements OnSharedPreferenceChangeLi
 		rowTmpLeft.setVisibility(session.getLeft() <= 0 ? View.GONE : View.VISIBLE);
 		txtScanTim.setText(OASession.timeString(session.getPrefs().getLong(OASession.PK.TSCAN, 0)));
 		txtScanRes.setText(TextUtils.join("\n", session.getLastWiFiScan()));
+		txtDbgText.setText(session.getPrefs().getString(OASession.PK.DEBUG, "N/A"));
 	}
 }

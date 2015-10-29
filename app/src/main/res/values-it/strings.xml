@@ -30,6 +30,7 @@
     <string name="lbl_debug">DEBUG</string>
     <string name="lbl_tscan">Ultima scansione:</string>
     <string name="lbl_lscan">WIFI trovate:</string>
+    <string name="lbl_dtext">Nota:</string>
     <string name="dlg_btn_ok">OK</string>
     <string name="dlg_btn_cancel">Cancel</string>
     

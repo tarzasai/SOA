@@ -38,6 +38,8 @@
     <string name="msg_wifi_off">WiFi is currently disabled</string>
     <string name="msg_wifi_scan">Scanning for WiFi networks</string>
     <string name="msg_bt_off">Bluetooth is currently disabled</string>
+    <string name="msg_house_title">You are at home</string>
+    <string name="msg_roamn_title">You are roaming</string>
     <string name="msg_enter_title">You are at work!</string>
     <string name="msg_enter_text">Time to go home: </string>
     <string name="msg_leave_title">Go home!</string>

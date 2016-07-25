@@ -4,10 +4,6 @@
     android:versionCode="2"
     android:versionName="2.0">
 
-    <!--
-    https://github.com/commonsguy/cw-omnibus/tree/master/AlarmManager/AntiDoze
-    -->
-
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
@@ -55,18 +51,7 @@
                 <action android:name="android.bluetooth.adapter.action.STATE_CHANGED" />
                 <action android:name="android.bluetooth.device.action.ACL_CONNECTED" />
                 <action android:name="android.bluetooth.device.action.ACL_DISCONNECTED" />
-                <action android:name="net.esorciccio.soa.REQUEST_VOLUME_DOWN" />
-                <action android:name="net.esorciccio.soa.REQUEST_VOLUME_UP" />
             </intent-filter>
-        </receiver>
-
-        <receiver android:name=".OAWidgetLarge">
-            <intent-filter>
-                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
-            </intent-filter>
-            <meta-data
-                android:name="android.appwidget.provider"
-                android:resource="@xml/widget_large_info" />
         </receiver>
 
         <service

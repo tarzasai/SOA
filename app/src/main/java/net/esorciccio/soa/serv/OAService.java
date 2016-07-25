@@ -1,7 +1,9 @@
 package net.esorciccio.soa.serv;
 
+import android.app.IntentService;
 import android.app.Notification;
 import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.media.AudioManager;
@@ -13,12 +15,15 @@ import android.text.format.DateUtils;
 import android.util.Log;
 import android.widget.Toast;
 
-import com.commonsware.cwac.wakeful.WakefulIntentService;
-
 import net.esorciccio.soa.R;
+import net.esorciccio.soa.SettingsActivity;
 
-public class OAService extends WakefulIntentService {
+public class OAService extends IntentService {
 	private static final String TAG = "OAService";
+
+	private static final int NOTIF_STATUS = 1199;
+	private static final String ACTION_ADD1MIN = "OAService.ACTION_ADD1MIN";
+	private static final String ACTION_DEL1MIN = "OAService.ACTION_DEL1MIN";
 
 	private static final int NOTIF_ENTER = 1;
 	private static final int NOTIF_LEAVE = 2;
@@ -27,6 +32,9 @@ public class OAService extends WakefulIntentService {
 	private static final int NOTIF_CLEAN = 5;
 	private static final Uri NOTIF_SOUND = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
 	private static final int VFLAGS = AudioManager.FLAG_PLAY_SOUND + AudioManager.FLAG_SHOW_UI;
+
+	private OASession session;
+	private NotificationManager notifmn;
 
 	private static AudioManager audioMan(Context context) {
 		return (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
@@ -44,23 +52,26 @@ public class OAService extends WakefulIntentService {
 
 	public OAService() {
 		super("OAService");
+
+		session = OASession.getInstance(this);
+		notifmn = (NotificationManager) this.getSystemService(Context.NOTIFICATION_SERVICE);
 	}
 
 	@Override
-	protected void doWakefulWork(Intent intent) {
+	protected void onHandleIntent(Intent intent) {
 		String act = intent != null ? intent.getAction() : null;
 		Log.v(TAG, act);
-		NotificationManager nm = (NotificationManager) this.getSystemService(Context.NOTIFICATION_SERVICE);
-		OASession session = OASession.getInstance(this);
 		switch (act) {
 			// messaggi dal sistema
 			case "android.intent.action.BOOT_COMPLETED":
+				notifService();
 				session.setLastWiFiScan(null);
 				session.checkNetwork();
 				break;
 			case "android.net.conn.CONNECTIVITY_CHANGE":
 			case "android.net.wifi.WIFI_STATE_CHANGED":
 			case "android.net.wifi.STATE_CHANGE":
+				notifService();
 				session.checkNetwork();
 				break;
 			case "android.net.wifi.SCAN_RESULTS":
@@ -68,40 +79,84 @@ public class OAService extends WakefulIntentService {
 				break;
 			// questi vengono dai timer
 			case OASession.AC.ENTER:
-				nm.notify(NOTIF_ENTER, getNotif(this, this.getString(R.string.msg_enter_title),
+				notifService();
+				notifmn.notify(NOTIF_ENTER, getNotif(this, this.getString(R.string.msg_enter_title),
 					this.getString(R.string.msg_enter_text) + " " + OASession.timeString(session.getLeaving())));
 				break;
 			case OASession.AC.LEAVE:
-				nm.notify(NOTIF_LEAVE, getNotif(this, this.getString(R.string.msg_leave_title),
+				notifService();
+				notifmn.notify(NOTIF_LEAVE, getNotif(this, this.getString(R.string.msg_leave_title),
 					this.getString(R.string.msg_leave_text) + " " +
 						DateUtils.getRelativeTimeSpanString(session.getLeaving(), System.currentTimeMillis(),
 							DateUtils.MINUTE_IN_MILLIS).toString()));
-				nm.cancel(NOTIF_BLUNC);
-				nm.cancel(NOTIF_ELUNC);
+				notifmn.cancel(NOTIF_BLUNC);
+				notifmn.cancel(NOTIF_ELUNC);
 				break;
 			case OASession.AC.LEFTW:
-				nm.cancel(NOTIF_ENTER);
-				nm.cancel(NOTIF_LEAVE);
-				nm.cancel(NOTIF_BLUNC);
-				nm.cancel(NOTIF_ELUNC);
+				notifService();
+				notifmn.cancel(NOTIF_ENTER);
+				notifmn.cancel(NOTIF_LEAVE);
+				notifmn.cancel(NOTIF_BLUNC);
+				notifmn.cancel(NOTIF_ELUNC);
 				break;
 			case OASession.AC.BLUNC:
-				nm.notify(NOTIF_BLUNC, getNotif(this, R.string.msg_blunc_title, R.string.msg_blunc_text));
+				notifmn.notify(NOTIF_BLUNC, getNotif(this, R.string.msg_blunc_title, R.string.msg_blunc_text));
 				break;
 			case OASession.AC.ELUNC:
-				nm.notify(NOTIF_ELUNC, getNotif(this, R.string.msg_elunc_title, R.string.msg_elunc_text));
-				nm.cancel(NOTIF_BLUNC);
+				notifmn.notify(NOTIF_ELUNC, getNotif(this, R.string.msg_elunc_title, R.string.msg_elunc_text));
+				notifmn.cancel(NOTIF_BLUNC);
 				break;
 			case OASession.AC.CLEAN:
-				nm.notify(NOTIF_CLEAN, getNotif(this, R.string.msg_clean_title, R.string.msg_clean_text));
-				break;
-			// comandi dal widget
-			case OASession.WR.VOLUME_UP:
-				audioMan(this).adjustStreamVolume(AudioManager.STREAM_MUSIC, AudioManager.ADJUST_RAISE, VFLAGS);
-				break;
-			case OASession.WR.VOLUME_DOWN:
-				audioMan(this).adjustStreamVolume(AudioManager.STREAM_MUSIC, AudioManager.ADJUST_LOWER, VFLAGS);
+				notifmn.notify(NOTIF_CLEAN, getNotif(this, R.string.msg_clean_title, R.string.msg_clean_text));
 				break;
 		}
+	}
+
+	private void notifService() {
+		// https://developer.android.com/design/patterns/notifications.html
+		NotificationCompat.Builder nb = new NotificationCompat.Builder(this);
+		nb.setCategory(NotificationCompat.CATEGORY_SERVICE);
+		nb.setPriority(NotificationCompat.PRIORITY_HIGH);
+		nb.setVisibility(NotificationCompat.VISIBILITY_PUBLIC);
+		nb.setSmallIcon(R.drawable.ic_launcher);
+		nb.setAutoCancel(false);
+		Intent ri;
+		PendingIntent pi;
+		if (session.getAtHome()) {
+			nb.setContentTitle(getString(R.string.notif_athome));
+			nb.setContentText(null);
+		} else if (!session.getAtWork()) {
+			nb.setContentTitle(getString(R.string.notif_roamin));
+			nb.setContentText(null);
+		} else {
+			nb.setContentTitle(getString(R.string.notif_atwork));
+			StringBuilder sb = new StringBuilder();
+			sb.append(String.format(getString(R.string.notif_tenter), OASession.timeString(session.getArrival())));
+			sb.append(" - ");
+			long lt = session.getLeft();
+			if (lt > 0)
+				sb.append(String.format(getString(R.string.notif_tleft), OASession.timeString(lt)));
+			else {
+				lt = session.getLeaving();
+				sb.append(String.format(getString(R.string.notif_tleave), OASession.timeString(lt)));
+				//
+				ri = new Intent(this, OAService.class);
+				ri.setAction(OAService.ACTION_ADD1MIN);
+				pi = PendingIntent.getService(this, 0, ri, 0);
+				nb.addAction(R.drawable.ic_stat_add_1m, "", pi);
+				//
+				ri = new Intent(this, OAService.class);
+				ri.setAction(OAService.ACTION_DEL1MIN);
+				pi = PendingIntent.getService(this, 0, ri, 0);
+				nb.addAction(R.drawable.ic_stat_del_1m, "", pi);
+			}
+			nb.setContentText(sb.toString());
+		}
+		//
+		ri = new Intent(this, SettingsActivity.class);
+		pi = PendingIntent.getActivity(this, 0, ri, PendingIntent.FLAG_UPDATE_CURRENT);
+		nb.setContentIntent(pi);
+		//
+		startForeground(NOTIF_STATUS, nb.build());
 	}
 }

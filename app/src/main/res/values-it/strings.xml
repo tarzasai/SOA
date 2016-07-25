@@ -33,6 +33,14 @@
     <string name="lbl_dtext">Nota:</string>
     <string name="dlg_btn_ok">OK</string>
     <string name="dlg_btn_cancel">Cancel</string>
+
+    <!-- notification strings -->
+    <string name="notif_athome">Sei a casa</string>
+    <string name="notif_atwork">Sei al lavoro</string>
+    <string name="notif_roamin">Sei in giro</string>
+    <string name="notif_tenter">Sei entrato alle %1$s</string>
+    <string name="notif_tleave">Devi uscire alle %1$s</string>
+    <string name="notif_tleft">Sei uscito alle %1$s</string>
     
     <!-- messages -->
     <string name="msg_wifi_off">WiFi is currently disabled</string>

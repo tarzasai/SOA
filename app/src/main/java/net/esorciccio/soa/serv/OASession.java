@@ -3,8 +3,6 @@ package net.esorciccio.soa.serv;
 import android.Manifest;
 import android.app.AlarmManager;
 import android.app.PendingIntent;
-import android.appwidget.AppWidgetManager;
-import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -22,9 +20,6 @@ import android.text.TextUtils;
 import android.text.format.DateUtils;
 import android.util.Log;
 
-import net.esorciccio.soa.OAWidgetLarge;
-
-import java.text.DateFormat;
 import java.text.DateFormatSymbols;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -251,6 +246,14 @@ public class OASession implements OnSharedPreferenceChangeListener {
 		return getPrefs().getBoolean(PK.LUNCH, true);
 	}
 
+	public boolean getAtWork() {
+		return getPrefs().getBoolean(PK.ATWRK, false);
+	}
+
+	public boolean getAtHome() {
+		return getPrefs().getBoolean(PK.ATHOM, false);
+	}
+
 	public long getLunchBegin() {
 		String[] tp = getPrefs().getString(PK.BLUNC, "13:30").split(":");
 		Calendar cal = Calendar.getInstance();
@@ -303,7 +306,6 @@ public class OASession implements OnSharedPreferenceChangeListener {
 			}
 		}
 		Log.d(TAG, "checkNetwork(): " + network);
-		updateWidget();
 	}
 
 	public void checkLocation() {
@@ -314,6 +316,7 @@ public class OASession implements OnSharedPreferenceChangeListener {
 		Log.d(TAG, "Local networks: " + TextUtils.join(", ", scanWiFis));
 		if (workWiFis.isEmpty() || scanWiFis.isEmpty())
 			return;
+		SharedPreferences.Editor editor = prefs.edit();
 		boolean work = false;
 		for (String ssid : workWiFis)
 			if (scanWiFis.contains(ssid)) {
@@ -321,13 +324,17 @@ public class OASession implements OnSharedPreferenceChangeListener {
 				work = true;
 				break;
 			}
-		if (!work)
+		editor.putBoolean(PK.ATWRK, work);
+		if (work)
+			editor.putBoolean(PK.ATHOM, false);
+		else
 			for (String ssid : homeWiFis)
 				if (scanWiFis.contains(ssid)) {
 					Log.d(TAG, "home network: " + ssid);
-					// ???
+					editor.putBoolean(PK.ATHOM, true);
 					break;
 				}
+		editor.commit();
 		long st = System.currentTimeMillis();
 		long at = getArrival();
 		long lt = getLeft();
@@ -392,14 +399,6 @@ public class OASession implements OnSharedPreferenceChangeListener {
 			am.cancel(ci);
 			Log.v(TAG, "cleaning alarm canceled");
 		}
-		updateWidget();
-	}
-
-	public void updateWidget() {
-		appContext.sendBroadcast(new Intent(appContext, OAWidgetLarge.class).setAction(
-			AppWidgetManager.ACTION_APPWIDGET_UPDATE).putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS,
-			AppWidgetManager.getInstance(appContext).getAppWidgetIds(
-				new ComponentName(appContext, OAWidgetLarge.class))));
 	}
 
 	@Override
@@ -455,6 +454,8 @@ public class OASession implements OnSharedPreferenceChangeListener {
 		public static final String CLDAY = "pk_cleanday";
 		public static final String CLTIM = "pk_cleantime";
 		// no checkalarms:
+		public static final String ATHOM = "pk_at_home";
+		public static final String ATWRK = "pk_at_work";
 		public static final String TSCAN = "pk_time_scan";
 		public static final String WSCAN = "pk_last_scan";
 		public static final String DEBUG = "pk_debug_msg";

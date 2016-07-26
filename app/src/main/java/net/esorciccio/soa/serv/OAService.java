@@ -18,7 +18,7 @@ import net.esorciccio.soa.R;
 public class OAService extends IntentService {
 	private static final String TAG = "OAService";
 
-	private static final int NOTIF_STATUS = 1199;
+	private static final int NOTIF_ID = 1199;
 	private static final Uri NOTIF_SOUND = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
 
 	public OAService() {
@@ -96,6 +96,6 @@ public class OAService extends IntentService {
 		PendingIntent pi = PendingIntent.getActivity(this, 0, ri, PendingIntent.FLAG_UPDATE_CURRENT);
 		nb.setContentIntent(pi);
 
-		nm.notify(NOTIF_STATUS, nb.build());
+		nm.notify(NOTIF_ID, nb.build());
 	}
 }

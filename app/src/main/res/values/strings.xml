@@ -32,9 +32,9 @@
 
     <!-- notification strings -->
     <string name="notif_atwork">You are at work</string>
-    <string name="notif_atlunch">You are in lunch break</string>
+    <string name="notif_atlunch">It\'s lunch time</string>
     <string name="notif_gohome">You should go home</string>
-    <string name="notif_details">Arrived at: %1$s - Leave at: %2$s</string>
+    <string name="notif_details">Since %1$s. Can leave at %2$s.</string>
     
     <!-- messages -->
     <string name="msg_wifi_off">WiFi is currently disabled</string>

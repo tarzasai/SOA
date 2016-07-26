@@ -34,7 +34,7 @@
     <string name="notif_atwork">Sei al lavoro</string>
     <string name="notif_atlunch">Sei in pausa pranzo</string>
     <string name="notif_gohome">Devi andare a casa</string>
-    <string name="notif_details">Entrata: %1$s - Devi uscire alle %2$s</string>
+    <string name="notif_details">Dalle %1$s. Devi uscire alle %2$s.</string>
     
     <!-- messages -->
     <string name="msg_wifi_off">WiFi is currently disabled</string>

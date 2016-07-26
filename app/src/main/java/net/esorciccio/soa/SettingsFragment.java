@@ -83,18 +83,6 @@ public class SettingsFragment extends PreferenceFragment {
 			}
 		});
 		setDaysetSummary(dayset);
-		
-		IntListPreference cleaningDay = (IntListPreference) findPreference(PK.CLDAY);
-		int cd = session.getCleanDay();
-		cleaningDay.setSummary(cd <= 0 || cd > 7 ? "Nessuno" : session.dayNames[cd]);
-		cleaningDay.setOnPreferenceChangeListener(new OnPreferenceChangeListener() {
-			@Override
-			public boolean onPreferenceChange(Preference preference, Object newValue) {
-				Integer day = Integer.parseInt((String) newValue);
-				preference.setSummary(day <= 0 ? "Nessuno" : session.dayNames[day]);
-				return true;
-			}
-		});
 	}
 	
 	private void setDaysetSummary(Preference pref) {

@@ -28,24 +28,6 @@
         android:summary="@string/pk_round_summ" />
 
     <PreferenceCategory
-        android:key="pc_clean"
-        android:title="@string/pc_clean_title" >
-	    
-        <net.esorciccio.soa.pref.IntListPreference
-            android:defaultValue="0"
-            android:key="pk_cleanday"
-            android:title="@string/pk_clday_title"
-            android:dialogTitle="@string/pk_clday_title"
-            android:entries="@array/pk_clday_names"
-            android:entryValues="@array/pk_clday_values" />
-
-        <net.esorciccio.soa.pref.TimePreference
-            android:defaultValue="18:00"
-            android:key="pk_cleantime"
-            android:title="@string/pk_cltim_title" />
-    </PreferenceCategory>
-
-    <PreferenceCategory
         android:key="pc_lunch"
         android:title="@string/pc_lunch_title" >
         

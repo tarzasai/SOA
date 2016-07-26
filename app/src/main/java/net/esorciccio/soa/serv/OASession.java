@@ -34,7 +34,6 @@ public class OASession implements OnSharedPreferenceChangeListener {
 	private static final String TAG = "OASession";
 
 	private static final String[] PERMLIST = {
-		//
 		Manifest.permission.RECEIVE_BOOT_COMPLETED,
 		Manifest.permission.ACCESS_COARSE_LOCATION,
 		Manifest.permission.ACCESS_FINE_LOCATION,
@@ -42,10 +41,7 @@ public class OASession implements OnSharedPreferenceChangeListener {
 		Manifest.permission.ACCESS_WIFI_STATE,
 		Manifest.permission.CHANGE_WIFI_STATE,
 		Manifest.permission.INTERNET,
-		Manifest.permission.READ_PHONE_STATE,
-		//
-		Manifest.permission.BLUETOOTH,
-		Manifest.permission.BLUETOOTH_ADMIN
+		Manifest.permission.READ_PHONE_STATE
 	};
 
 	public static boolean isOnWIFI = false;
@@ -224,24 +220,6 @@ public class OASession implements OnSharedPreferenceChangeListener {
 		return getPrefs().getBoolean(PK.ROUND, false);
 	}
 
-	public int getCleanDay() {
-		return getPrefs().getInt(PK.CLDAY, 0);
-	}
-
-	public long getCleanAlarmTime() {
-		if (getWeekDay() != getCleanDay())
-			return 0;
-		String[] tp = getPrefs().getString(PK.CLTIM, "18:00").split(":");
-		Calendar cal = Calendar.getInstance();
-		cal.setTimeInMillis(System.currentTimeMillis());
-		cal.set(Calendar.HOUR_OF_DAY, Integer.parseInt(tp[0]));
-		cal.set(Calendar.MINUTE, Integer.parseInt(tp[1]));
-		cal.set(Calendar.SECOND, 0);
-		cal.set(Calendar.MILLISECOND, 0);
-		cal.add(Calendar.MINUTE, -30); // mezz'ora prima
-		return cal.getTimeInMillis();
-	}
-
 	public boolean getLunchAlerts() {
 		return getPrefs().getBoolean(PK.LUNCH, true);
 	}
@@ -252,6 +230,10 @@ public class OASession implements OnSharedPreferenceChangeListener {
 
 	public boolean getAtHome() {
 		return getPrefs().getBoolean(PK.ATHOM, false);
+	}
+
+	public boolean getAtLunch() {
+		return getPrefs().getBoolean(PK.ATLUN, false);
 	}
 
 	public long getLunchBegin() {
@@ -274,6 +256,12 @@ public class OASession implements OnSharedPreferenceChangeListener {
 		cal.set(Calendar.SECOND, 0);
 		cal.set(Calendar.MILLISECOND, 0);
 		return cal.getTimeInMillis();
+	}
+
+	public void setAtLunch(boolean value) {
+		SharedPreferences.Editor editor = prefs.edit();
+		editor.putBoolean(PK.ATLUN, value);
+		editor.commit();
 	}
 
 	public void checkNetwork() {
@@ -332,6 +320,7 @@ public class OASession implements OnSharedPreferenceChangeListener {
 				if (scanWiFis.contains(ssid)) {
 					Log.d(TAG, "home network: " + ssid);
 					editor.putBoolean(PK.ATHOM, true);
+					editor.putBoolean(PK.ATLUN, false);
 					break;
 				}
 		editor.commit();
@@ -353,7 +342,6 @@ public class OASession implements OnSharedPreferenceChangeListener {
 		PendingIntent li = mkPI(AC.LEAVE);
 		PendingIntent bi = mkPI(AC.BLUNC);
 		PendingIntent ei = mkPI(AC.ELUNC);
-		PendingIntent ci = mkPI(AC.CLEAN);
 		long st = System.currentTimeMillis();
 		long at = getArrival();
 		long lt = getLeaving();
@@ -388,17 +376,6 @@ public class OASession implements OnSharedPreferenceChangeListener {
 			am.cancel(ei);
 			Log.v(TAG, "lunch alarms canceled");
 		}
-		// allarme pulizie
-		long ct = getCleanAlarmTime();
-		if (ct > st) {
-			am.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, ct, ci); // è già mezz'ora prima
-			am.setRepeating(AlarmManager.RTC_WAKEUP, ct + AlarmManager.INTERVAL_FIFTEEN_MINUTES,
-				AlarmManager.INTERVAL_FIFTEEN_MINUTES, ci);
-			Log.v(TAG, "cleaning alarm set to " + timeString(ct));
-		} else {
-			am.cancel(ci);
-			Log.v(TAG, "cleaning alarm canceled");
-		}
 	}
 
 	@Override
@@ -425,8 +402,6 @@ public class OASession implements OnSharedPreferenceChangeListener {
 				case PK.LUNCH:
 				case PK.BLUNC:
 				case PK.ELUNC:
-				case PK.CLDAY:
-				case PK.CLTIM:
 					checkAlarms();
 					break;
 			}
@@ -438,7 +413,6 @@ public class OASession implements OnSharedPreferenceChangeListener {
 		public static final String LEFTW = "net.esorciccio.soa.OASession.AC.LEFTW";
 		public static final String BLUNC = "net.esorciccio.soa.OASession.AC.BLUNC";
 		public static final String ELUNC = "net.esorciccio.soa.OASession.AC.ELUNC";
-		public static final String CLEAN = "net.esorciccio.soa.OASession.AC.CLEAN";
 	}
 
 	public static class PK {
@@ -451,18 +425,12 @@ public class OASession implements OnSharedPreferenceChangeListener {
 		public static final String LUNCH = "pk_lunch";
 		public static final String BLUNC = "pk_lstart";
 		public static final String ELUNC = "pk_lstop";
-		public static final String CLDAY = "pk_cleanday";
-		public static final String CLTIM = "pk_cleantime";
 		// no checkalarms:
 		public static final String ATHOM = "pk_at_home";
 		public static final String ATWRK = "pk_at_work";
+		public static final String ATLUN = "pk_at_lunc";
 		public static final String TSCAN = "pk_time_scan";
 		public static final String WSCAN = "pk_last_scan";
 		public static final String DEBUG = "pk_debug_msg";
-	}
-
-	public static class WR {
-		public static final String VOLUME_DOWN = "net.esorciccio.soa.REQUEST_VOLUME_DOWN";
-		public static final String VOLUME_UP = "net.esorciccio.soa.REQUEST_VOLUME_UP";
 	}
 }

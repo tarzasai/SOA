@@ -1,12 +1,15 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 23
-    buildToolsVersion "23.0.1"
+    compileSdkVersion 24
+    buildToolsVersion "24.0.0"
+
     defaultConfig {
         applicationId "net.esorciccio.soa"
         minSdkVersion 23
-        targetSdkVersion 23
+        targetSdkVersion 24
+        versionCode 3
+        versionName "3.0b"
     }
     buildTypes {
         release {
@@ -14,17 +17,13 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.txt'
         }
     }
-    productFlavors {
-    }
-}
-
-repositories {
-    maven {
-        url "https://s3.amazonaws.com/repo.commonsware.com"
+    lintOptions {
+        disable 'MissingTranslation'
     }
 }
 
 dependencies {
-    compile 'com.android.support:support-v4:23.1.0'
-    compile 'com.commonsware.cwac:wakeful:1.0.+'
+    compile 'com.android.support:appcompat-v7:24.0.0'
+    compile 'com.android.support:design:24.0.0'
+    compile 'com.android.support:support-v4:24.0.0'
 }

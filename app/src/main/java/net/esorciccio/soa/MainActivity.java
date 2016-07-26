@@ -19,6 +19,7 @@ import android.widget.TableRow;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import net.esorciccio.soa.serv.OAService;
 import net.esorciccio.soa.serv.OASession;
 
 import java.util.Calendar;
@@ -64,6 +65,8 @@ public class MainActivity extends Activity implements OnSharedPreferenceChangeLi
 	@Override
 	protected void onResume() {
 		super.onResume();
+
+		startService(new Intent(this, OAService.class).setAction("startup"));
 
 		session.getPrefs().registerOnSharedPreferenceChangeListener(this);
 

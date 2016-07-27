@@ -34,8 +34,8 @@ public class TimePreference extends DialogPreference {
 	protected void onBindDialogView(View v) {
 		super.onBindDialogView(v);
 		
-		picker.setCurrentHour(lastHour);
-		picker.setCurrentMinute(lastMinute);
+		picker.setHour(lastHour);
+		picker.setMinute(lastMinute);
 	}
 	
 	@Override
@@ -43,8 +43,8 @@ public class TimePreference extends DialogPreference {
 		super.onDialogClosed(positiveResult);
 		
 		if (positiveResult) {
-			lastHour = picker.getCurrentHour();
-			lastMinute = picker.getCurrentMinute();
+			lastHour = picker.getHour();
+			lastMinute = picker.getMinute();
 			String time = getSummary().toString();
 			if (callChangeListener(time)) {
 				persistString(time);

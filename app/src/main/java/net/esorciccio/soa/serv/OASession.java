@@ -8,14 +8,10 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.content.pm.PackageManager;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
 import android.net.wifi.ScanResult;
-import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.preference.PreferenceManager;
 import android.support.v4.content.ContextCompat;
-import android.telephony.TelephonyManager;
 import android.text.TextUtils;
 import android.text.format.DateUtils;
 import android.util.Log;
@@ -44,11 +40,6 @@ public class OASession implements OnSharedPreferenceChangeListener {
 		Manifest.permission.READ_PHONE_STATE
 	};
 
-	public static boolean isOnWIFI = false;
-	public static boolean isOn3G = false;
-	public static boolean isRoaming = false;
-	public static String network = "Non connesso";
-
 	private static Context appContext;
 	private static OASession singleton;
 
@@ -71,20 +62,15 @@ public class OASession implements OnSharedPreferenceChangeListener {
 		return singleton;
 	}
 
-	private static PendingIntent mkPI(String action) {
-		return PendingIntent.getBroadcast(appContext, 0, new Intent(appContext, OAReceiver.class).setAction(action),
-			PendingIntent.FLAG_UPDATE_CURRENT);
-	}
-
-	public static String dateString(long time, String format) {
-		return new SimpleDateFormat(format, Locale.getDefault()).format(new Date(time));
-	}
-
 	public static String timeString(long time) {
 		return time <= 0 ? "N/A" : new SimpleDateFormat("HH:mm", Locale.getDefault()).format(new Date(time));
 	}
 
-	public List<String> missingPermissions() {
+	public SharedPreferences getPrefs() {
+		return prefs;
+	}
+
+	public List<String> getMissingPermissions() {
 		List<String> perms = new ArrayList<>();
 		for (String p : PERMLIST)
 			if (ContextCompat.checkSelfPermission(appContext, p) != PackageManager.PERMISSION_GRANTED)
@@ -92,20 +78,12 @@ public class OASession implements OnSharedPreferenceChangeListener {
 		return perms;
 	}
 
-	public SharedPreferences getPrefs() {
-		return prefs;
-	}
-
-	public int getWeekDay() {
-		return Calendar.getInstance().get(Calendar.DAY_OF_WEEK);
-	}
-
-	public String getDayName() {
-		return Calendar.getInstance().getDisplayName(Calendar.DAY_OF_WEEK, Calendar.LONG, Locale.getDefault());
-	}
-
 	public String getDayName(int weekday) {
 		return dayNames[weekday];
+	}
+
+	public Set<String> getWifiSet(String wifiPref) {
+		return getPrefs().getStringSet(wifiPref, new HashSet<String>());
 	}
 
 	public int getDayHours() {
@@ -126,17 +104,6 @@ public class OASession implements OnSharedPreferenceChangeListener {
 		SharedPreferences.Editor editor = prefs.edit();
 		for (int i = 0; i < daysets.length; i++)
 			editor.putInt(PK.HOURS + Integer.toString(i + 2), daysets[i]);
-		editor.commit();
-	}
-
-	public Set<String> getWifiSet(String wifiPref) {
-		return getPrefs().getStringSet(wifiPref, new HashSet<String>());
-	}
-
-	public void setWifiSet(String wifiPref, Set<String> ssids) {
-		Log.v(TAG, "setWifiSet");
-		SharedPreferences.Editor editor = prefs.edit();
-		editor.putStringSet(wifiPref, ssids);
 		editor.commit();
 	}
 
@@ -198,7 +165,6 @@ public class OASession implements OnSharedPreferenceChangeListener {
 	public void setLeft(long value) {
 		if (value == getLeft())
 			return;
-
 		Log.v(TAG, "setLeaving");
 		SharedPreferences.Editor editor = prefs.edit();
 		editor.putLong(PK.LEAVE, value);
@@ -226,10 +192,6 @@ public class OASession implements OnSharedPreferenceChangeListener {
 
 	public boolean getAtWork() {
 		return getPrefs().getBoolean(PK.ATWRK, false);
-	}
-
-	public boolean getAtHome() {
-		return getPrefs().getBoolean(PK.ATHOM, false);
 	}
 
 	public boolean getAtLunch() {
@@ -264,36 +226,15 @@ public class OASession implements OnSharedPreferenceChangeListener {
 		editor.commit();
 	}
 
-	public void checkNetwork() {
-		List<String> mp = missingPermissions();
-		if (!mp.isEmpty())
-			network = "Permessi mancanti!";
-		else {
-			ConnectivityManager cm = (ConnectivityManager) appContext.getSystemService(Context.CONNECTIVITY_SERVICE);
-			NetworkInfo ni = cm.getActiveNetworkInfo();
-			int ns = (ni != null && ni.isConnected()) ? ni.getType() : ConnectivityManager.TYPE_DUMMY;
-			isOn3G = ns == ConnectivityManager.TYPE_MOBILE;
-			isOnWIFI = ns == ConnectivityManager.TYPE_WIFI;
-			network = "";
-			if (isOnWIFI) {
-				WifiManager wm = (WifiManager) appContext.getSystemService(Context.WIFI_SERVICE);
-				if (getLastWiFiScan().isEmpty())
-					wm.startScan();
-				WifiInfo wi = wm.getConnectionInfo();
-				if (wi != null && !TextUtils.isEmpty(wi.getSSID()))
-					network = wi.getSSID().replace("\"", "");
-			}
-			TelephonyManager tm = (TelephonyManager) appContext.getSystemService(Context.TELEPHONY_SERVICE);
-			if (TextUtils.isEmpty(network)) {
-				if (ns != ConnectivityManager.TYPE_MOBILE || tm == null)
-					network = "Nessuna connessione";
-				else {
-					network = tm.getNetworkOperatorName();
-					isRoaming = tm.isNetworkRoaming();
-				}
+	public boolean checkNetwork() {
+		if (getLastWiFiScan().isEmpty()) {
+			List<String> mp = getMissingPermissions();
+			if (mp.isEmpty()) {
+				((WifiManager) appContext.getSystemService(Context.WIFI_SERVICE)).startScan();
+				return true;
 			}
 		}
-		Log.d(TAG, "checkNetwork(): " + network);
+		return false;
 	}
 
 	public void checkLocation() {
@@ -336,8 +277,13 @@ public class OASession implements OnSharedPreferenceChangeListener {
 			setLeft(st);
 	}
 
+	private static PendingIntent mkPI(String action) {
+		return PendingIntent.getBroadcast(appContext, 0, new Intent(appContext, OAReceiver.class).setAction(action),
+			PendingIntent.FLAG_UPDATE_CURRENT);
+	}
+
 	public void checkAlarms() {
-		Log.v(TAG, "resetAlarms()");
+		Log.v(TAG, "checkAlarms()");
 		AlarmManager am = (AlarmManager) appContext.getSystemService(Context.ALARM_SERVICE);
 		PendingIntent li = mkPI(AC.LEAVE);
 		PendingIntent bi = mkPI(AC.BLUNC);
@@ -408,11 +354,12 @@ public class OASession implements OnSharedPreferenceChangeListener {
 	}
 
 	public static class AC {
-		public static final String ENTER = "net.esorciccio.soa.OASession.AC.ENTER";
-		public static final String LEAVE = "net.esorciccio.soa.OASession.AC.LEAVE";
-		public static final String LEFTW = "net.esorciccio.soa.OASession.AC.LEFTW";
-		public static final String BLUNC = "net.esorciccio.soa.OASession.AC.BLUNC";
-		public static final String ELUNC = "net.esorciccio.soa.OASession.AC.ELUNC";
+		public static final String CHECK = "SOA.AC.CHECK";
+		public static final String ENTER = "SOA.AC.ENTER";
+		public static final String LEAVE = "SOA.AC.LEAVE";
+		public static final String LEFTW = "SOA.AC.LEFTW";
+		public static final String BLUNC = "SOA.AC.BLUNC";
+		public static final String ELUNC = "SOA.AC.ELUNC";
 	}
 
 	public static class PK {

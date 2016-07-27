@@ -32,19 +32,19 @@ public class SettingsFragment extends PreferenceFragment {
 
 		session = OASession.getInstance(getActivity());
 		
-		Set<String> homeWifis = session.getWifiSet(PK.WFHOM);
+		//Set<String> homeWifis = session.getWifiSet(PK.WFHOM);
 		Set<String> workWifis = session.getWifiSet(PK.WFWRK);
 		Set<String> lastWifis = session.getLastWiFiScan();
-		for (String ssid: homeWifis)
+		/*for (String ssid: homeWifis)
 			if (!lastWifis.contains(ssid))
-				lastWifis.add(ssid);
+				lastWifis.add(ssid);*/
 		for (String ssid: workWifis)
 			if (!lastWifis.contains(ssid))
 				lastWifis.add(ssid);
 		CharSequence[] wifis = lastWifis.toArray(new CharSequence[lastWifis.size()]);
 		Arrays.sort(wifis);
 		
-		MultiSelectListPreference homeWifiSet = (MultiSelectListPreference) findPreference(PK.WFHOM);
+		/*MultiSelectListPreference homeWifiSet = (MultiSelectListPreference) findPreference(PK.WFHOM);
 		homeWifiSet.setEntries(wifis);
 		homeWifiSet.setEntryValues(wifis);
 		if (!homeWifis.isEmpty())
@@ -57,7 +57,7 @@ public class SettingsFragment extends PreferenceFragment {
 				preference.setSummary(list == null ? "Nessuna" : TextUtils.join(", ", list));
 				return true;
 			}
-		});
+		});*/
 		
 		MultiSelectListPreference workWifiSet = (MultiSelectListPreference) findPreference(PK.WFWRK);
 		workWifiSet.setEntries(wifis);

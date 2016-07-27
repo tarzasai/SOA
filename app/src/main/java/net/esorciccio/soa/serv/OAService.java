@@ -12,8 +12,8 @@ import android.net.wifi.WifiManager;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 
-import net.esorciccio.soa.MainActivity;
 import net.esorciccio.soa.R;
+import net.esorciccio.soa.SettingsActivity;
 
 public class OAService extends IntentService {
 	private static final String TAG = "OAService";
@@ -37,12 +37,13 @@ public class OAService extends IntentService {
 			case "android.intent.action.BOOT_COMPLETED":
 				session.setLastWiFiScan(null);
 				session.checkNetwork();
-				break;
+				return;
 			case "android.net.conn.CONNECTIVITY_CHANGE":
 			case "android.net.wifi.WIFI_STATE_CHANGED":
 			case "android.net.wifi.STATE_CHANGE":
-			case "startup":
-				session.checkNetwork();
+			case OASession.AC.CHECK:
+				if (!session.checkNetwork())
+					session.checkAlarms();
 				break;
 			case "android.net.wifi.SCAN_RESULTS":
 				session.setLastWiFiScan(((WifiManager) this.getSystemService(Context.WIFI_SERVICE)).getScanResults());
@@ -76,23 +77,28 @@ public class OAService extends IntentService {
 		nb.setVisibility(NotificationCompat.VISIBILITY_PUBLIC);
 		nb.setAutoCancel(false);
 		nb.setOngoing(true);
+		nb.setSmallIcon(R.drawable.ic_notif_small);
 
+		long lt = session.getLeaving();
 		if (session.getAtLunch()) {
-			nb.setContentTitle(getString(R.string.notif_atlunch));
-			nb.setLargeIcon(BitmapFactory.decodeResource(getResources(), R.drawable.ic_notif_at_lunch));
+			nb.setContentTitle(getString(R.string.notif_lunch_title));
+			nb.setContentText(String.format(getString(R.string.notif_lunch_text),
+				OASession.timeString(session.getLunchBegin()), OASession.timeString(session.getLunchEnd())));
+			nb.setLargeIcon(BitmapFactory.decodeResource(getResources(), R.drawable.ic_notif_lunch));
+		} else if (System.currentTimeMillis() < lt) {
+			nb.setContentTitle(getString(R.string.notif_atwork_title));
+			nb.setContentText(String.format(getString(R.string.notif_atwork_text),
+				OASession.timeString(session.getArrival()), OASession.timeString(lt)));
+			nb.setLargeIcon(BitmapFactory.decodeResource(getResources(), R.drawable.ic_notif_work));
 		} else {
-			long lt = session.getLeaving();
-			long st = System.currentTimeMillis();
-			nb.setContentTitle(getString(st < lt ? R.string.notif_atwork : R.string.notif_gohome));
-			nb.setLargeIcon(BitmapFactory.decodeResource(getResources(), R.drawable.ic_notif_at_work));
+			nb.setContentTitle(getString(R.string.notif_gohome_title));
+			nb.setContentText(String.format(getString(R.string.notif_gohome_text), OASession.timeString(lt)));
+			nb.setLargeIcon(BitmapFactory.decodeResource(getResources(), R.drawable.ic_notif_home));
 		}
-		nb.setSmallIcon(R.drawable.ic_stat_notif);
-		nb.setContentText(String.format(getString(R.string.notif_details), OASession.timeString(session.getArrival()),
-			OASession.timeString(session.getLeaving())));
 		if (sound)
 			nb.setSound(NOTIF_SOUND);
 
-		Intent ri = new Intent(this, MainActivity.class);
+		Intent ri = new Intent(this, SettingsActivity.class);
 		PendingIntent pi = PendingIntent.getActivity(this, 0, ri, PendingIntent.FLAG_UPDATE_CURRENT);
 		nb.setContentIntent(pi);
 

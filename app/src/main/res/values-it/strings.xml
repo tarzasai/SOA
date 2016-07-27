@@ -2,11 +2,11 @@
 <resources>
 
     <string name="app_name">Simple Office Alarms</string>
-    <string name="action_reset">Reset data</string>
-    <string name="action_settings">Settings</string>
-    <string name="settings_title">Impostazioni SOA</string>
+    <string name="action_reset">Orario di ingresso corrente</string>
+    <string name="action_wifis">Risultato ultima scansione WiFi</string>
 
     <!-- settings -->
+    <string name="pk_arrival_title">Ora di ingresso corrente</string>
     <string name="pc_lunch_title">Pausa pranzo</string>
     <string name="pd_dayset_title">Ore lavor. per giorno della settimana</string>
     <string name="pd_wifibt_title">Reti WiFi zona casa</string>
@@ -20,21 +20,20 @@
     <!-- labels -->
     <string name="txt_empty"/>
     <string name="txt_hours">ore</string>
-    <string name="lbl_arrival">Sei entrato alle:</string>
-    <string name="lbl_leaving">Devi uscire alle:</string>
-    <string name="lbl_tmpleft">Sei uscito alle:</string>
-    <string name="lbl_debug">DEBUG</string>
-    <string name="lbl_tscan">Ultima scansione:</string>
-    <string name="lbl_lscan">WIFI trovate:</string>
-    <string name="lbl_dtext">Nota:</string>
     <string name="dlg_btn_ok">OK</string>
-    <string name="dlg_btn_cancel">Cancel</string>
+    <string name="dlg_btn_cancel">Annulla</string>
+    <string name="dlg_reset_title">Cambia orario di ingresso corrente</string>
+    <string name="dlg_reset_done">L\'orario di ingresso è stato modificato</string>
+    <string name="dlg_reset_canc">L\'orario di ingresso non è stato cambiato</string>
+    <string name="dlg_wifis_title">Risultati ultima scansione WiFi</string>
 
     <!-- notification strings -->
-    <string name="notif_atwork">Sei al lavoro</string>
-    <string name="notif_atlunch">Sei in pausa pranzo</string>
-    <string name="notif_gohome">Devi andare a casa</string>
-    <string name="notif_details">Dalle %1$s. Devi uscire alle %2$s.</string>
+    <string name="notif_atwork_title">Sei al lavoro</string>
+    <string name="notif_atwork_text">Dalle %1$s. Devi uscire alle %2$s.</string>
+    <string name="notif_gohome_title">Devi andare a casa</string>
+    <string name="notif_gohome_text">Hai finito alle %1$s.</string>
+    <string name="notif_lunch_title">Sei in pausa pranzo</string>
+    <string name="notif_lunch_text">Dalle %1$s alle %2$s.</string>
     
     <!-- messages -->
     <string name="msg_wifi_off">WiFi is currently disabled</string>

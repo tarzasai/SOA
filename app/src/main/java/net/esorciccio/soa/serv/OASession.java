@@ -123,32 +123,39 @@ public class OASession implements OnSharedPreferenceChangeListener {
 		} else
 			editor.remove(PK.WSCAN);
 		editor.commit();
+		// on AC power there's a scan every 6 min, so on workdays we set an alarm to scan again in 7 min (will be
+		// eventually canceled by an automatic scan 1 min before) until we get at work.
+		AlarmManager am = (AlarmManager) appContext.getSystemService(Context.ALARM_SERVICE);
+		PendingIntent ci = mkPI(AC.CHECK);
+		am.cancel(ci);
+		if (getDayHours() > 0 && getArrival() <= 0) {
+			long ct = System.currentTimeMillis() + (60000 * 7);
+			am.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, ct, ci);
+			Log.v(TAG, "check alarm reset to " + timeString(ct));
+		}
 	}
 
 	public long getArrival() {
 		long res = getPrefs().getLong(PK.ARRIV, 0);
-		if (res > 0 && !DateUtils.isToday(res))
-			res = 0;
-		else {
-			Calendar cal = Calendar.getInstance();
-			cal.setTimeInMillis(res);
-			if (getRoundAt5()) {
-				int m = cal.get(Calendar.MINUTE);
-				m -= m % 5;
-				cal.set(Calendar.MINUTE, m);
-			}
-			cal.set(Calendar.SECOND, 0);
-			cal.set(Calendar.MILLISECOND, 0);
-			res = cal.getTimeInMillis();
-		}
-		return res;
+		return res > 0 && DateUtils.isToday(res) ? res : 0;
 	}
 
 	public void setArrival(long value) {
 		if (value == getArrival())
 			return;
-
 		Log.v(TAG, "setArrival");
+		// arrotondamenti
+		Calendar cal = Calendar.getInstance();
+		cal.setTimeInMillis(value);
+		if (getPrefs().getBoolean(PK.ROUND, false)) {
+			int m = cal.get(Calendar.MINUTE);
+			m -= m % 5;
+			cal.set(Calendar.MINUTE, m);
+		}
+		cal.set(Calendar.SECOND, 0);
+		cal.set(Calendar.MILLISECOND, 0);
+		value = cal.getTimeInMillis();
+		// storage
 		SharedPreferences.Editor editor = prefs.edit();
 		editor.putLong(PK.ARRIV, value);
 		editor.putLong(PK.LEAVE, 0);
@@ -157,9 +164,7 @@ public class OASession implements OnSharedPreferenceChangeListener {
 
 	public long getLeft() {
 		long res = getPrefs().getLong(PK.LEAVE, 0);
-		if (res > 0 && !DateUtils.isToday(res))
-			res = 0;
-		return res;
+		return res > 0 && DateUtils.isToday(res) ? res : 0;
 	}
 
 	public void setLeft(long value) {
@@ -168,7 +173,6 @@ public class OASession implements OnSharedPreferenceChangeListener {
 		Log.v(TAG, "setLeaving");
 		SharedPreferences.Editor editor = prefs.edit();
 		editor.putLong(PK.LEAVE, value);
-		editor.putString(PK.DEBUG, timeString(System.currentTimeMillis()) + " setLeft: " + timeString(value));
 		editor.commit();
 	}
 
@@ -182,23 +186,13 @@ public class OASession implements OnSharedPreferenceChangeListener {
 		return res;
 	}
 
-	public boolean getRoundAt5() {
-		return getPrefs().getBoolean(PK.ROUND, false);
-	}
-
 	public boolean getLunchAlerts() {
 		return getPrefs().getBoolean(PK.LUNCH, true);
 	}
 
-	public boolean getAtWork() {
-		return getPrefs().getBoolean(PK.ATWRK, false);
-	}
-
-	public boolean getAtLunch() {
-		return getPrefs().getBoolean(PK.ATLUN, false);
-	}
-
 	public long getLunchBegin() {
+		if (!getLunchAlerts())
+			return 0;
 		String[] tp = getPrefs().getString(PK.BLUNC, "13:30").split(":");
 		Calendar cal = Calendar.getInstance();
 		cal.setTimeInMillis(System.currentTimeMillis());
@@ -210,6 +204,8 @@ public class OASession implements OnSharedPreferenceChangeListener {
 	}
 
 	public long getLunchEnd() {
+		if (!getLunchAlerts())
+			return 0;
 		String[] tp = getPrefs().getString(PK.ELUNC, "14:30").split(":");
 		Calendar cal = Calendar.getInstance();
 		cal.setTimeInMillis(System.currentTimeMillis());
@@ -220,14 +216,8 @@ public class OASession implements OnSharedPreferenceChangeListener {
 		return cal.getTimeInMillis();
 	}
 
-	public void setAtLunch(boolean value) {
-		SharedPreferences.Editor editor = prefs.edit();
-		editor.putBoolean(PK.ATLUN, value);
-		editor.commit();
-	}
-
-	public boolean checkNetwork() {
-		if (getLastWiFiScan().isEmpty()) {
+	public boolean checkNetwork(boolean force) {
+		if (getLastWiFiScan().isEmpty() || force) {
 			List<String> mp = getMissingPermissions();
 			if (mp.isEmpty()) {
 				((WifiManager) appContext.getSystemService(Context.WIFI_SERVICE)).startScan();
@@ -240,12 +230,10 @@ public class OASession implements OnSharedPreferenceChangeListener {
 	public void checkLocation() {
 		Log.v(TAG, "checkLocation()");
 		Set<String> workWiFis = getPrefs().getStringSet(PK.WFWRK, new HashSet<String>());
-		Set<String> homeWiFis = getPrefs().getStringSet(PK.WFHOM, new HashSet<String>());
 		Set<String> scanWiFis = getLastWiFiScan();
 		Log.d(TAG, "Local networks: " + TextUtils.join(", ", scanWiFis));
 		if (workWiFis.isEmpty() || scanWiFis.isEmpty())
 			return;
-		SharedPreferences.Editor editor = prefs.edit();
 		boolean work = false;
 		for (String ssid : workWiFis)
 			if (scanWiFis.contains(ssid)) {
@@ -253,18 +241,6 @@ public class OASession implements OnSharedPreferenceChangeListener {
 				work = true;
 				break;
 			}
-		editor.putBoolean(PK.ATWRK, work);
-		if (work)
-			editor.putBoolean(PK.ATHOM, false);
-		else
-			for (String ssid : homeWiFis)
-				if (scanWiFis.contains(ssid)) {
-					Log.d(TAG, "home network: " + ssid);
-					editor.putBoolean(PK.ATHOM, true);
-					editor.putBoolean(PK.ATLUN, false);
-					break;
-				}
-		editor.commit();
 		long st = System.currentTimeMillis();
 		long at = getArrival();
 		long lt = getLeft();
@@ -273,6 +249,8 @@ public class OASession implements OnSharedPreferenceChangeListener {
 				setArrival(st);
 			else if (lt > 0) // ero uscito ma sono rientrato (pranzo)
 				setLeft(0);
+			// cancel the next forced scan, we don't need it anymore
+			((AlarmManager) appContext.getSystemService(Context.ALARM_SERVICE)).cancel(mkPI(AC.CHECK));
 		} else if (at > 0 && lt <= 0) // sono uscito
 			setLeft(st);
 	}
@@ -293,11 +271,12 @@ public class OASession implements OnSharedPreferenceChangeListener {
 		long lt = getLeaving();
 		long bt = getLunchBegin();
 		long et = getLunchEnd();
-		// allarmi uscita e pranzo
+		// allarmi lavoro
 		if (at > 0 && lt > st && getLeft() <= 0) {
 			am.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, lt - AlarmManager.INTERVAL_FIFTEEN_MINUTES, li);
 			am.setRepeating(AlarmManager.RTC_WAKEUP, lt, AlarmManager.INTERVAL_FIFTEEN_MINUTES, li);
 			Log.v(TAG, "leaving alarm set to " + timeString(lt));
+			// allarmi pranzo
 			if (getLunchAlerts()) {
 				if (bt < st || bt >= lt) {
 					am.cancel(bi);
@@ -332,9 +311,8 @@ public class OASession implements OnSharedPreferenceChangeListener {
 			checkAlarms(); // checkLocation potrebbe non eseguirlo, ma è necessario.
 		} else
 			switch (key) {
-				case PK.WSCAN:
 				case PK.WFWRK:
-				case PK.WFHOM:
+				case PK.WSCAN:
 					checkLocation();
 					break;
 				case PK.ARRIV:
@@ -365,7 +343,6 @@ public class OASession implements OnSharedPreferenceChangeListener {
 	public static class PK {
 		public static final String HOURS = "pk_hours";
 		public static final String WFWRK = "pk_wifis";
-		public static final String WFHOM = "pk_wifih";
 		public static final String ROUND = "pk_round";
 		public static final String ARRIV = "pk_arrival";
 		public static final String LEAVE = "pk_leaving";
@@ -373,11 +350,7 @@ public class OASession implements OnSharedPreferenceChangeListener {
 		public static final String BLUNC = "pk_lstart";
 		public static final String ELUNC = "pk_lstop";
 		// no checkalarms:
-		public static final String ATHOM = "pk_at_home";
-		public static final String ATWRK = "pk_at_work";
-		public static final String ATLUN = "pk_at_lunc";
 		public static final String TSCAN = "pk_time_scan";
 		public static final String WSCAN = "pk_last_scan";
-		public static final String DEBUG = "pk_debug_msg";
 	}
 }

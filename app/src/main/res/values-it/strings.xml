@@ -3,7 +3,7 @@
 
     <string name="app_name">Simple Office Alarms</string>
     <string name="action_reset">Orario di ingresso corrente</string>
-    <string name="action_wifis">Risultato ultima scansione WiFi</string>
+    <string name="action_wifis">Ultima scansione WiFi</string>
 
     <!-- settings -->
     <string name="pk_arrival_title">Ora di ingresso corrente</string>
@@ -29,11 +29,11 @@
 
     <!-- notification strings -->
     <string name="notif_atwork_title">Sei al lavoro</string>
-    <string name="notif_atwork_text">Dalle %1$s. Devi uscire alle %2$s.</string>
+    <string name="notif_atwork_text">Dalle %1$s alle %2$s.</string>
     <string name="notif_gohome_title">Devi andare a casa</string>
-    <string name="notif_gohome_text">Hai finito alle %1$s.</string>
+    <string name="notif_gohome_text">Dovevi uscire alle %1$s.</string>
     <string name="notif_lunch_title">Sei in pausa pranzo</string>
-    <string name="notif_lunch_text">Dalle %1$s alle %2$s.</string>
+    <string name="notif_lunch_text">Fino alle %1$s.</string>
     
     <!-- messages -->
     <string name="msg_wifi_off">WiFi is currently disabled</string>

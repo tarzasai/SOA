@@ -28,11 +28,11 @@
 
     <!-- notification strings -->
     <string name="notif_atwork_title">You are at work</string>
-    <string name="notif_atwork_text">Since %1$s. Can leave at %2$s.</string>
+    <string name="notif_atwork_text">From %1$s to %2$s.</string>
     <string name="notif_gohome_title">You should go home</string>
-    <string name="notif_gohome_text">Worktime ended at %1$s.</string>
+    <string name="notif_gohome_text">Workday ended at %1$s.</string>
     <string name="notif_lunch_title">It\'s lunch time</string>
-    <string name="notif_lunch_text">From %1$s to %2$s.</string>
+    <string name="notif_lunch_text">Until %1$s.</string>
     
     <!-- messages -->
     <string name="msg_wifi_off">WiFi is currently disabled</string>

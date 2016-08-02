@@ -1,4 +1,4 @@
-package net.esorciccio.soa;
+package net.ggelardi.soa;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -12,8 +12,8 @@ import android.view.MenuItem;
 import android.widget.EditText;
 import android.widget.Toast;
 
-import net.esorciccio.soa.serv.OAService;
-import net.esorciccio.soa.serv.OASession;
+import net.ggelardi.soa.serv.OAService;
+import net.ggelardi.soa.serv.OASession;
 
 import java.util.Calendar;
 import java.util.List;

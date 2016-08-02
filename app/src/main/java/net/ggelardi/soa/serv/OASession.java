@@ -1,4 +1,4 @@
-package net.esorciccio.soa.serv;
+package net.ggelardi.soa.serv;
 
 import android.Manifest;
 import android.app.AlarmManager;
@@ -36,8 +36,7 @@ public class OASession implements OnSharedPreferenceChangeListener {
 		Manifest.permission.ACCESS_NETWORK_STATE,
 		Manifest.permission.ACCESS_WIFI_STATE,
 		Manifest.permission.CHANGE_WIFI_STATE,
-		Manifest.permission.INTERNET,
-		Manifest.permission.READ_PHONE_STATE
+		Manifest.permission.INTERNET
 	};
 
 	private static Context appContext;
@@ -91,7 +90,7 @@ public class OASession implements OnSharedPreferenceChangeListener {
 	}
 
 	public int getDayHours(int weekday) {
-		return getPrefs().getInt(PK.HOURS + Integer.toString(weekday), 8);
+		return getPrefs().getInt(PK.HOURS + Integer.toString(weekday), 0);
 	}
 
 	public int[] getWeekHours() {
@@ -247,7 +246,7 @@ public class OASession implements OnSharedPreferenceChangeListener {
 		if (work) {
 			if (at <= 0) // sono arrivato in ufficio
 				setArrival(st);
-			else if (lt > 0) // ero uscito ma sono rientrato (pranzo)
+			else if (lt > 0) // ero uscito ma sono rientrato (pranzo?)
 				setLeft(0);
 			// cancel the next forced scan, we don't need it anymore
 			((AlarmManager) appContext.getSystemService(Context.ALARM_SERVICE)).cancel(mkPI(AC.CHECK));

@@ -1,7 +1,7 @@
-package net.esorciccio.soa.pref;
+package net.ggelardi.soa.pref;
 
-import net.esorciccio.soa.R;
-import net.esorciccio.soa.serv.OASession;
+import net.ggelardi.soa.R;
+import net.ggelardi.soa.serv.OASession;
 import android.content.Context;
 import android.preference.DialogPreference;
 import android.util.AttributeSet;

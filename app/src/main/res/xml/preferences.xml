@@ -1,33 +1,33 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" >
 
-    <!--
-    <MultiSelectListPreference
-        android:key="pk_wifih"
-        android:title="@string/pd_wifibt_title"
-        android:entries="@array/empty_array"
-        android:entryValues="@array/empty_array"
-        android:defaultValue="@array/empty_array"
-        android:dialogTitle="@string/pd_wifibt_title" />
-    -->
+    <PreferenceCategory
+        android:key="pc_wifis"
+        android:title="@string/pc_wifis_title" >
     
-    <MultiSelectListPreference
-        android:key="pk_wifis"
-        android:title="@string/pd_wifiset_title"
-        android:entries="@array/empty_array"
-        android:entryValues="@array/empty_array"
-        android:defaultValue="@array/empty_array"
-        android:dialogTitle="@string/pd_wifiset_title" />
+        <MultiSelectListPreference
+            android:key="pk_wifis"
+            android:title="@string/pd_wifiset_title"
+            android:entries="@array/empty_array"
+            android:entryValues="@array/empty_array"
+            android:defaultValue="@array/empty_array"
+            android:dialogTitle="@string/pd_wifiset_title" />
+    </PreferenceCategory>
 
-    <net.esorciccio.soa.pref.DaysetsDialog
-        android:key="pk_hours"
-        android:title="@string/pd_dayset_title" />
+    <PreferenceCategory
+        android:key="pc_hours"
+        android:title="@string/pc_hours_title" >
 
-    <CheckBoxPreference
-        android:defaultValue="false"
-        android:key="pk_round"
-        android:title="@string/pk_round_title"
-        android:summary="@string/pk_round_summ" />
+        <net.ggelardi.soa.pref.DaysetsDialog
+            android:key="pk_hours"
+            android:title="@string/pd_dayset_title" />
+
+        <CheckBoxPreference
+            android:defaultValue="false"
+            android:key="pk_round"
+            android:title="@string/pk_round_title"
+            android:summary="@string/pk_round_summ" />
+    </PreferenceCategory>
 
     <PreferenceCategory
         android:key="pc_lunch"
@@ -36,14 +36,15 @@
         <CheckBoxPreference
             android:defaultValue="true"
             android:key="pk_lunch"
-            android:title="@string/pk_lunch_title" />
+            android:title="@string/pk_lunch_title"
+            android:summary="@string/pk_lunch_summ" />
 
-        <net.esorciccio.soa.pref.TimePreference
+        <net.ggelardi.soa.pref.TimePreference
             android:defaultValue="13:30"
             android:key="pk_lstart"
             android:title="@string/pk_lstart_title" />
         
-        <net.esorciccio.soa.pref.TimePreference
+        <net.ggelardi.soa.pref.TimePreference
             android:defaultValue="14:30"
             android:key="pk_lstop"
             android:title="@string/pk_lstop_title" />

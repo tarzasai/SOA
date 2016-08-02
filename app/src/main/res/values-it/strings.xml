@@ -1,21 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <string name="app_name">Simple Office Alarms</string>
+    <string name="app_name">Badge WiFi</string>
     <string name="action_reset">Orario di ingresso corrente</string>
     <string name="action_wifis">Ultima scansione WiFi</string>
 
     <!-- settings -->
-    <string name="pk_arrival_title">Ora di ingresso corrente</string>
-    <string name="pc_lunch_title">Pausa pranzo</string>
-    <string name="pd_dayset_title">Ore lavor. per giorno della settimana</string>
-    <string name="pd_wifibt_title">Reti WiFi zona casa</string>
-    <string name="pd_wifiset_title">Reti WiFi zona ufficio</string>
-    <string name="pk_lstart_title">Inizio pausa</string>
-    <string name="pk_lstop_title">Fine pausa</string>
-    <string name="pk_lunch_title">Attiva allarmi pausa pranzo</string>
+    <string name="pc_wifis_title">Reti WiFi</string>
+    <string name="pd_wifiset_title">Hotspot sul posto di lavoro</string>
+    <string name="pd_wifiset_summ">Nessuna rete selezionata</string>
+    <string name="pc_hours_title">Orario di lavoro</string>
+    <string name="pd_dayset_title">Ore per giorno della settimana</string>
+    <string name="pd_dayset_summ">Orario non impostato</string>
     <string name="pk_round_title">Arrotonda minuti in ora di arrivo</string>
-    <string name="pk_round_summ">8:56 diventa 8:55, 9:03 diventa 9:00 ecc</string>
+    <string name="pk_round_summ">8:56 diventa 8:55, 9:03 diventa 9:00 ecc.</string>
+    <string name="pc_lunch_title">Pausa pranzo</string>
+    <string name="pk_lunch_title">Segnala inizio e fine pausa</string>
+    <string name="pk_lunch_summ">Include la pausa nel calcolo dell\'orario di uscita.</string>
+    <string name="pk_lstart_title">Ora di inizio pranzo</string>
+    <string name="pk_lstop_title">Ora di fine pranzo</string>
     
     <!-- labels -->
     <string name="txt_empty"/>

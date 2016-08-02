@@ -1,4 +1,4 @@
-package net.esorciccio.soa;
+package net.ggelardi.soa;
 
 import java.text.DateFormatSymbols;
 import java.util.ArrayList;
@@ -7,19 +7,20 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 
-import net.esorciccio.soa.pref.DaysetsDialog;
-import net.esorciccio.soa.pref.IntListPreference;
-import net.esorciccio.soa.serv.OASession;
-import net.esorciccio.soa.serv.OASession.PK;
+import net.ggelardi.soa.pref.DaysetsDialog;
+import net.ggelardi.soa.serv.OASession;
+import net.ggelardi.soa.serv.OASession.PK;
 
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.MultiSelectListPreference;
 import android.preference.Preference;
 import android.preference.Preference.OnPreferenceChangeListener;
 import android.preference.PreferenceFragment;
+import android.preference.PreferenceManager;
 import android.text.TextUtils;
 
-public class SettingsFragment extends PreferenceFragment {
+public class SettingsFragment extends PreferenceFragment implements SharedPreferences.OnSharedPreferenceChangeListener {
 	
 	private OASession session;
 	
@@ -41,37 +42,39 @@ public class SettingsFragment extends PreferenceFragment {
 		Arrays.sort(wifis);
 
 		MultiSelectListPreference workWifiSet = (MultiSelectListPreference) findPreference(PK.WFWRK);
-		workWifiSet.setEntries(wifis);
-		workWifiSet.setEntryValues(wifis);
-		if (!workWifis.isEmpty())
-			workWifiSet.setSummary(TextUtils.join(", ", workWifis));
 		workWifiSet.setOnPreferenceChangeListener(new OnPreferenceChangeListener() {
 			@SuppressWarnings("unchecked")
 			@Override
 			public boolean onPreferenceChange(Preference preference, Object newValue) {
 				Set<String> list = newValue == null ? null : (Set<String>) newValue;
-				preference.setSummary(list == null ? "Nessuna" : TextUtils.join(", ", list));
+				preference.setSummary(list == null ? getString(R.string.pd_wifiset_summ) : TextUtils.join(", ", list));
 				return true;
 			}
 		});
+		workWifiSet.setSummary(workWifis.isEmpty() ? getString(R.string.pd_wifiset_summ) :
+			TextUtils.join(", ", workWifis));
+		workWifiSet.setEntries(wifis);
+		workWifiSet.setEntryValues(wifis);
 		
-		DaysetsDialog dayset = (DaysetsDialog) findPreference(PK.HOURS);
-		dayset.setOnPreferenceChangeListener(new OnPreferenceChangeListener() {
-			@Override
-			public boolean onPreferenceChange(Preference preference, Object newValue) {
-				setDaysetSummary(preference);
-				return true;
-			}
-		});
-		setDaysetSummary(dayset);
+		findPreference(PK.HOURS).setSummary(getDaysetSummary());
+
+		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getContext());
+		prefs.registerOnSharedPreferenceChangeListener(this);
 	}
-	
-	private void setDaysetSummary(Preference pref) {
+
+	@Override
+	public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
+		if (key.startsWith(PK.HOURS))
+			findPreference(PK.HOURS).setSummary(getDaysetSummary());
+	}
+
+	private String getDaysetSummary() {
 		String[] names = new DateFormatSymbols(Locale.getDefault()).getShortWeekdays();
 		int[] hours = session.getWeekHours();
-		List<String> sets = new ArrayList<>();
+		List<String> lst = new ArrayList<>();
 		for (int i = 1; i < 7; i++)
-			sets.add(String.format(Locale.getDefault(), "%s %d", names[i+1], hours[i-1]));
-		pref.setSummary(TextUtils.join(", ", sets));
+			if (hours[i-1] > 0)
+				lst.add(String.format(Locale.getDefault(), "%s %d", names[i+1], hours[i-1]));
+		return lst.isEmpty() ? getString(R.string.pd_dayset_summ) : TextUtils.join(", ", lst);
 	}
 }

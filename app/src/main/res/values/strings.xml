@@ -1,20 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <string name="app_name">Simple Office Alarms</string>
+    <string name="app_name">WiFi Time Clock</string>
     <string name="action_reset">Current arrival time</string>
     <string name="action_wifis">Last WiFi scan results</string>
 
     <!-- settings -->
-    <string name="pc_lunch_title">Lunch alerts</string>
+    <string name="pc_wifis_title">WiFi netwokrs</string>
+    <string name="pd_wifiset_title">WiFi hotspots at work</string>
+    <string name="pd_wifiset_summ">Not assigned</string>
+    <string name="pc_hours_title">Work time</string>
     <string name="pd_dayset_title">Work hours per day</string>
-    <string name="pd_wifibt_title">Home WiFi</string>
-    <string name="pd_wifiset_title">Office WiFi</string>
-    <string name="pk_lstart_title">Lunch time begin</string>
-    <string name="pk_lstop_title">Lunch time end</string>
-    <string name="pk_lunch_title">Alerts at lunch time begin-end</string>
+    <string name="pd_dayset_summ">Work time not assigned</string>
     <string name="pk_round_title">Round at nearest 5 minutes</string>
     <string name="pk_round_summ">8:56 becomes 8:55, 9:03 becomes 9:00 etc</string>
+    <string name="pc_lunch_title">Lunch alerts</string>
+    <string name="pk_lunch_title">Alerts at lunch time begin-end</string>
+    <!--<string name="pk_lunch_summ">The go-home alarm time shift if active.</string>-->
+    <string name="pk_lstart_title">Lunch time begin</string>
+    <string name="pk_lstop_title">Lunch time end</string>
     
     <!-- labels -->
     <string name="txt_empty"/>
@@ -46,7 +50,5 @@
     <string name="test_wifi">ds9h0dvndsavad</string>
     <string name="test_boh">N/A</string>
     <string name="test_netw">Bafangule</string>
-    <string name="test_place">via Come Si Chiama 99, 99999 Città PR</string>
-    <string name="add_widget">Add widget</string>
 
 </resources>

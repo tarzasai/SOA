@@ -1,8 +1,8 @@
-package net.esorciccio.soa.pref;
+package net.ggelardi.soa.pref;
 
 import java.util.Locale;
 
-import net.esorciccio.soa.R;
+import net.ggelardi.soa.R;
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.preference.DialogPreference;

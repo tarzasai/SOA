@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="net.esorciccio.soa">
+    package="net.ggelardi.soa">
 
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
@@ -8,7 +8,6 @@
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
     <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
-    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
     <uses-permission android:name="android.permission.INTERNET" />
 
     <application
@@ -19,7 +18,7 @@
         android:theme="@style/AppTheme">
 
         <activity
-            android:name=".SettingsActivity"
+            android:name="net.ggelardi.soa.SettingsActivity"
             android:label="@string/app_name"
             android:launchMode="singleTask">
             <intent-filter>
@@ -29,7 +28,7 @@
         </activity>
 
         <receiver
-            android:name=".serv.OAReceiver"
+            android:name="net.ggelardi.soa.serv.OAReceiver"
             android:enabled="true"
             android:exported="true">
             <intent-filter>
@@ -42,7 +41,7 @@
         </receiver>
 
         <service
-            android:name=".serv.OAService"
+            android:name="net.ggelardi.soa.serv.OAService"
             android:exported="false" >
         </service>
 

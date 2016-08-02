@@ -1,4 +1,4 @@
-package net.esorciccio.soa.serv;
+package net.ggelardi.soa.serv;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;

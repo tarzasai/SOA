@@ -1,4 +1,4 @@
-package net.esorciccio.soa.serv;
+package net.ggelardi.soa.serv;
 
 import android.app.IntentService;
 import android.app.NotificationManager;
@@ -12,8 +12,8 @@ import android.net.wifi.WifiManager;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 
-import net.esorciccio.soa.R;
-import net.esorciccio.soa.SettingsActivity;
+import net.ggelardi.soa.R;
+import net.ggelardi.soa.SettingsActivity;
 
 public class OAService extends IntentService {
 	private static final String TAG = "OAService";

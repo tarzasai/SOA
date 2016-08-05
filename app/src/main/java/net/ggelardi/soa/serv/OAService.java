@@ -29,15 +29,13 @@ public class OAService extends IntentService {
 	protected void onHandleIntent(Intent intent) {
 		String act = intent != null ? intent.getAction() : "asd";
 		Log.v(TAG, act);
-
 		OASession session = OASession.getInstance(this);
 		boolean sound = false;
-
 		switch (act) {
 			case "android.intent.action.BOOT_COMPLETED":
 				session.setLastWiFiScan(null);
 				session.checkNetwork(false);
-				return;
+				break;
 			case "android.net.conn.CONNECTIVITY_CHANGE":
 			case "android.net.wifi.WIFI_STATE_CHANGED":
 			case "android.net.wifi.STATE_CHANGE":
@@ -61,21 +59,22 @@ public class OAService extends IntentService {
 			default:
 				return;
 		}
-
-		long st = System.currentTimeMillis();
+		NotificationManager nm = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 		long at = session.getArrival();
+		if (at <= 0) {
+			nm.cancelAll();
+			return;
+		}
 		long lt = session.getLeft();
 		long bt = session.getLunchBegin();
 		long et = session.getLunchEnd();
+		long st = System.currentTimeMillis();
 		boolean atLunch = bt > 0 && st >= bt && et > st;
 		boolean atWork = at > 0 && (lt <= 0 || atLunch);
-
-		NotificationManager nm = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 		if (!atWork) {
 			nm.cancelAll();
 			return;
 		}
-
 		NotificationCompat.Builder nb = new NotificationCompat.Builder(this);
 		nb.setCategory(NotificationCompat.CATEGORY_STATUS);
 		nb.setPriority(NotificationCompat.PRIORITY_HIGH);

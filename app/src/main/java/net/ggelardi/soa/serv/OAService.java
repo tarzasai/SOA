@@ -3,6 +3,7 @@ package net.ggelardi.soa.serv;
 import android.app.IntentService;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
+import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.BitmapFactory;
@@ -23,6 +24,22 @@ public class OAService extends IntentService {
 
 	public OAService() {
 		super("OAService");
+	}
+
+	@Override
+	public int onStartCommand(Intent intent, int flags, int startId) {
+		super.onStartCommand(intent, flags, startId);
+
+		Log.v(TAG, "onStartCommand");
+
+		return Service.START_STICKY;
+	}
+
+	@Override
+	public void onDestroy() {
+		super.onDestroy();
+
+		Log.v(TAG, "onDestroy");
 	}
 
 	@Override

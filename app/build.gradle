@@ -1,13 +1,13 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 24
-    buildToolsVersion "24.0.2"
+    compileSdkVersion 27
+    buildToolsVersion "27.0.2"
 
     defaultConfig {
         applicationId "net.ggelardi.soa"
         minSdkVersion 23
-        targetSdkVersion 24
+        targetSdkVersion 26
         versionCode 4
         versionName "3.0b"
     }
@@ -23,7 +23,7 @@ android {
 }
 
 dependencies {
-    compile 'com.android.support:appcompat-v7:24.0.0'
-    compile 'com.android.support:design:24.0.0'
-    compile 'com.android.support:support-v4:24.0.0'
+    compile 'com.android.support:appcompat-v7:27.0.2'
+    compile 'com.android.support:design:27.0.2'
+    compile 'com.android.support:support-v4:27.0.2'
 }

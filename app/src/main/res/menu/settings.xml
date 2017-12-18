@@ -1,17 +1,18 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     tools:context="net.ggelardi.soa.SettingsActivity">
-
-    <item
-        android:id="@+id/action_reset"
-        android:orderInCategory="11"
-        android:title="@string/action_reset"
-        android:showAsAction="never"/>
 
     <item
         android:id="@+id/action_wifis"
         android:orderInCategory="10"
         android:title="@string/action_wifis"
-        android:showAsAction="never"/>
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/action_reset"
+        android:orderInCategory="11"
+        android:title="@string/action_reset"
+        app:showAsAction="never" />
 
 </menu>

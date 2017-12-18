@@ -2,6 +2,7 @@ package net.ggelardi.soa;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.TimePickerDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -10,6 +11,7 @@ import android.support.v4.app.ActivityCompat;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.EditText;
+import android.widget.TimePicker;
 import android.widget.Toast;
 
 import net.ggelardi.soa.serv.OAService;
@@ -63,33 +65,27 @@ public class SettingsActivity extends Activity implements SharedPreferences.OnSh
 		// as you specify a parent activity in AndroidManifest.xml.
 		int id = item.getItemId();
 		if (id == R.id.action_reset) {
-			final EditText input = new EditText(this);
-			input.setText(OASession.timeString(session.getArrival()));
-			new AlertDialog.Builder(SettingsActivity.this).setTitle(R.string.dlg_reset_title).setView(input)
-				.setPositiveButton(R.string.dlg_btn_ok, new DialogInterface.OnClickListener() {
-					@Override
-					public void onClick(DialogInterface dialog, int whichButton) {
-						try {
-							String[] tp = input.getText().toString().split(":");
-							Calendar cal = Calendar.getInstance();
-							cal.set(Calendar.HOUR_OF_DAY, Integer.parseInt(tp[0]));
-							cal.set(Calendar.MINUTE, Integer.parseInt(tp[1]));
-							cal.set(Calendar.SECOND, 0);
-							cal.set(Calendar.MILLISECOND, 0);
-							session.setArrival(cal.getTimeInMillis());
-							Toast.makeText(SettingsActivity.this, R.string.dlg_reset_done, Toast.LENGTH_SHORT).show();
-						} catch (Exception err) {
-							Toast.makeText(SettingsActivity.this, err.getMessage(), Toast.LENGTH_SHORT).show();
-						}
-					}
-				})
-				.setNegativeButton(R.string.dlg_btn_cancel, new DialogInterface.OnClickListener() {
-					@Override
-					public void onClick(DialogInterface dialog, int whichButton) {
-						Toast.makeText(SettingsActivity.this, R.string.dlg_reset_canc, Toast.LENGTH_SHORT).show();
-					}
-				})
-				.setCancelable(true).show();
+		    int h = 0;
+		    int m = 0;
+		    long t = session.getArrival();
+		    if (t > 0) {
+		        Calendar cal = Calendar.getInstance();
+                cal.setTimeInMillis(t);
+                h = cal.get(Calendar.HOUR);
+                m = cal.get(Calendar.MINUTE);
+            }
+		    new TimePickerDialog(this, new TimePickerDialog.OnTimeSetListener() {
+                @Override
+                public void onTimeSet(TimePicker timePicker, int hour, int min) {
+                    Calendar cal = Calendar.getInstance();
+                    cal.set(Calendar.HOUR_OF_DAY, hour);
+                    cal.set(Calendar.MINUTE, min);
+                    cal.set(Calendar.SECOND, 0);
+                    cal.set(Calendar.MILLISECOND, 0);
+                    session.setArrival(cal.getTimeInMillis());
+                    Toast.makeText(SettingsActivity.this, R.string.dlg_reset_done, Toast.LENGTH_SHORT).show();
+                }
+            }, h, m, true).show();
 		}
 		if (id == R.id.action_wifis) {
 			Set<String> list = session.getLastWiFiScan();

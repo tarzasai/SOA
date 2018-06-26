@@ -16,7 +16,7 @@
     <string name="pk_round_summ">8:56 becomes 8:55, 9:03 becomes 9:00 etc</string>
     <string name="pc_lunch_title">Lunch alerts</string>
     <string name="pk_lunch_title">Alerts at lunch time begin-end</string>
-    <!--<string name="pk_lunch_summ">The go-home alarm time shift if active.</string>-->
+    <string name="pk_lunch_summ">Will set the Go-home alarm at [arrival time] + [work hours] + [lunch-break time].</string>
     <string name="pk_lstart_title">Lunch time begin</string>
     <string name="pk_lstop_title">Lunch time end</string>
     

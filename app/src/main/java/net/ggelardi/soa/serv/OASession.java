@@ -2,6 +2,8 @@ package net.ggelardi.soa.serv;
 
 import android.Manifest;
 import android.app.AlarmManager;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
@@ -53,6 +55,12 @@ public class OASession implements OnSharedPreferenceChangeListener {
 
 		prefs = PreferenceManager.getDefaultSharedPreferences(appContext);
 		prefs.registerOnSharedPreferenceChangeListener(this);
+
+		NotificationChannel nc = new NotificationChannel("SOA_CH_ID", "SOA Alarms", NotificationManager.IMPORTANCE_HIGH);
+		nc.setDescription("All SOA notifications");
+		nc.setBypassDnd(true);
+		NotificationManager nm = context.getSystemService(NotificationManager.class);
+		nm.createNotificationChannel(nc);
 	}
 
 	public static OASession getInstance(Context context) {
@@ -340,16 +348,20 @@ public class OASession implements OnSharedPreferenceChangeListener {
 	}
 
 	public static class PK {
+		// settings (user preferences)
 		public static final String HOURS = "pk_hours";
 		public static final String WFWRK = "pk_wifis";
 		public static final String ROUND = "pk_round";
-		public static final String ARRIV = "pk_arrival";
-		public static final String LEAVE = "pk_leaving";
 		public static final String LUNCH = "pk_lunch";
 		public static final String BLUNC = "pk_lstart";
 		public static final String ELUNC = "pk_lstop";
-		// no checkalarms:
-		public static final String TSCAN = "pk_time_scan";
-		public static final String WSCAN = "pk_last_scan";
+		public static final String NVINI = "pk_vacbegin";
+		public static final String NVEND = "pk_vacend";
+		// stored data (system managed)
+		public static final String ARRIV = "pk_arrival"; //
+		public static final String LEAVE = "pk_leaving"; //
+		public static final String UDOFF = "pk_offwork"; //
+		public static final String TSCAN = "pk_time_scan"; // last wifi scan time
+		public static final String WSCAN = "pk_last_scan"; // last wifi scan results
 	}
 }

@@ -1,12 +1,15 @@
 package net.ggelardi.soa.serv;
 
 import android.app.IntentService;
+import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.BitmapFactory;
+import android.media.AudioAttributes;
+import android.media.AudioManager;
 import android.media.RingtoneManager;
 import android.net.Uri;
 import android.net.wifi.WifiManager;
@@ -19,6 +22,7 @@ import net.ggelardi.soa.SettingsActivity;
 public class OAService extends IntentService {
 	private static final String TAG = "OAService";
 
+	private static final int NOTIF_CH_ID = 2299;
 	private static final int NOTIF_ID = 1199;
 	private static final Uri NOTIF_SOUND = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
 
@@ -92,15 +96,15 @@ public class OAService extends IntentService {
 			nm.cancelAll();
 			return;
 		}
-		NotificationCompat.Builder nb = new NotificationCompat.Builder(this);
+		NotificationCompat.Builder nb = new NotificationCompat.Builder(this, "SOA_CH_ID");
 		nb.setCategory(NotificationCompat.CATEGORY_STATUS);
 		nb.setPriority(NotificationCompat.PRIORITY_HIGH);
 		nb.setVisibility(NotificationCompat.VISIBILITY_PUBLIC);
+		nb.setSmallIcon(R.drawable.ic_notif_small);
 		nb.setAutoCancel(false);
 		nb.setOngoing(true);
-		nb.setSmallIcon(R.drawable.ic_notif_small);
 		if (sound)
-			nb.setSound(NOTIF_SOUND);
+			nb.setSound(NOTIF_SOUND, AudioAttributes.USAGE_ALARM);
 		lt = session.getLeaving();
 		if (atLunch) {
 			nb.setContentTitle(getString(R.string.notif_lunch_title));

@@ -7,6 +7,7 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.content.pm.PackageManager;
@@ -56,11 +57,16 @@ public class OASession implements OnSharedPreferenceChangeListener {
 		prefs = PreferenceManager.getDefaultSharedPreferences(appContext);
 		prefs.registerOnSharedPreferenceChangeListener(this);
 
-		NotificationChannel nc = new NotificationChannel("SOA_CH_ID", "SOA Alarms", NotificationManager.IMPORTANCE_HIGH);
+		NotificationChannel nc = new NotificationChannel("SOA_CH_ID", "SOA Alarms",
+                NotificationManager.IMPORTANCE_HIGH);
 		nc.setDescription("All SOA notifications");
 		nc.setBypassDnd(true);
-		NotificationManager nm = context.getSystemService(NotificationManager.class);
+		NotificationManager nm = appContext.getSystemService(NotificationManager.class);
 		nm.createNotificationChannel(nc);
+
+		IntentFilter flt = new IntentFilter();
+		flt.addAction("android.net.wifi.SCAN_RESULTS");
+		appContext.registerReceiver(new OAReceiver(), flt);
 	}
 
 	public static OASession getInstance(Context context) {

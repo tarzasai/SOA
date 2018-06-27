@@ -13,6 +13,7 @@ import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.content.pm.PackageManager;
 import android.net.wifi.ScanResult;
 import android.net.wifi.WifiManager;
+import android.os.BatteryManager;
 import android.preference.PreferenceManager;
 import android.support.v4.content.ContextCompat;
 import android.text.TextUtils;
@@ -56,13 +57,6 @@ public class OASession implements OnSharedPreferenceChangeListener {
 
 		prefs = PreferenceManager.getDefaultSharedPreferences(appContext);
 		prefs.registerOnSharedPreferenceChangeListener(this);
-
-		NotificationChannel nc = new NotificationChannel("SOA_CH_ID", "SOA Alarms",
-                NotificationManager.IMPORTANCE_HIGH);
-		nc.setDescription("All SOA notifications");
-		nc.setBypassDnd(true);
-		NotificationManager nm = appContext.getSystemService(NotificationManager.class);
-		nm.createNotificationChannel(nc);
 
 		IntentFilter flt = new IntentFilter();
 		flt.addAction("android.net.wifi.SCAN_RESULTS");
@@ -114,10 +108,10 @@ public class OASession implements OnSharedPreferenceChangeListener {
 
 	public void setWeekHours(int[] daysets) {
 		Log.v(TAG, "setWeekHours");
-		SharedPreferences.Editor editor = prefs.edit();
+		SharedPreferences.Editor spe = prefs.edit();
 		for (int i = 0; i < daysets.length; i++)
-			editor.putInt(PK.HOURS + Integer.toString(i + 2), daysets[i]);
-		editor.commit();
+			spe.putInt(PK.HOURS + Integer.toString(i + 2), daysets[i]);
+		spe.commit();
 	}
 
 	public Set<String> getLastWiFiScan() {
@@ -125,24 +119,27 @@ public class OASession implements OnSharedPreferenceChangeListener {
 	}
 
 	public void setLastWiFiScan(List<ScanResult> networks) {
-		SharedPreferences.Editor editor = getPrefs().edit();
-		editor.putLong(PK.TSCAN, System.currentTimeMillis());
+		Log.v(TAG, "Scan results received");
+		SharedPreferences.Editor spe = getPrefs().edit();
+		spe.putLong(PK.TSCAN, System.currentTimeMillis());
 		if (networks != null && !networks.isEmpty()) {
 			Set<String> values = new HashSet<>();
 			for (ScanResult sr : networks)
 				if (!TextUtils.isEmpty(sr.SSID))
 					values.add(sr.SSID);
-			editor.putStringSet(PK.WSCAN, values);
+			spe.putStringSet(PK.WSCAN, values);
 		} else
-			editor.remove(PK.WSCAN);
-		editor.commit();
-		// on AC power there's a scan every 6 min, so on workdays we set an alarm to scan again in 7 min (will be
-		// eventually canceled by an automatic scan 1 min before) until we get at work.
+			spe.remove(PK.WSCAN);
+		spe.commit();
+		// cancel the next programmed scan alarm (if any)
 		AlarmManager am = (AlarmManager) appContext.getSystemService(Context.ALARM_SERVICE);
 		PendingIntent ci = mkPI(AC.CHECK);
 		am.cancel(ci);
-		if (getDayHours() > 0 && getArrival() <= 0) {
-			long ct = System.currentTimeMillis() + (60000 * 7);
+		// on AC power looks like a scan happens about every minute, so on workdays, while we are
+		// not yet at work AND on battery we'll set an alarm to request a new scan in few minutes,
+		// but it'll be probably canceled by a system issued scan (because location service)
+		if (getDayHours() > 0 && getArrival() <= 0 && !isCharging()) {
+			long ct = System.currentTimeMillis() + AlarmManager.INTERVAL_FIFTEEN_MINUTES;
 			am.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, ct, ci);
 			Log.v(TAG, "check alarm reset to " + timeString(ct));
 		}
@@ -169,10 +166,10 @@ public class OASession implements OnSharedPreferenceChangeListener {
 		cal.set(Calendar.MILLISECOND, 0);
 		value = cal.getTimeInMillis();
 		// storage
-		SharedPreferences.Editor editor = prefs.edit();
-		editor.putLong(PK.ARRIV, value);
-		editor.putLong(PK.LEAVE, 0);
-		editor.commit();
+		SharedPreferences.Editor spe = prefs.edit();
+		spe.putLong(PK.ARRIV, value);
+		spe.putLong(PK.LEAVE, 0);
+		spe.commit();
 	}
 
 	public long getLeft() {
@@ -184,9 +181,9 @@ public class OASession implements OnSharedPreferenceChangeListener {
 		if (value == getLeft())
 			return;
 		Log.v(TAG, "setLeaving");
-		SharedPreferences.Editor editor = prefs.edit();
-		editor.putLong(PK.LEAVE, value);
-		editor.commit();
+		SharedPreferences.Editor spe = prefs.edit();
+		spe.putLong(PK.LEAVE, value);
+		spe.commit();
 	}
 
 	public long getLeaving() {
@@ -229,7 +226,7 @@ public class OASession implements OnSharedPreferenceChangeListener {
 		return cal.getTimeInMillis();
 	}
 
-	public boolean checkNetwork(boolean force) {
+	public boolean requestWifiScan(boolean force) {
 		if (getLastWiFiScan().isEmpty() || force) {
 			List<String> mp = getMissingPermissions();
 			if (mp.isEmpty()) {
@@ -247,25 +244,32 @@ public class OASession implements OnSharedPreferenceChangeListener {
 		Log.d(TAG, "Local networks: " + TextUtils.join(", ", scanWiFis));
 		if (workWiFis.isEmpty() || scanWiFis.isEmpty())
 			return;
-		boolean work = false;
+		boolean workWifiFound = false;
 		for (String ssid : workWiFis)
 			if (scanWiFis.contains(ssid)) {
 				Log.d(TAG, "office network: " + ssid);
-				work = true;
+				workWifiFound = true;
 				break;
 			}
 		long st = System.currentTimeMillis();
 		long at = getArrival();
 		long lt = getLeft();
-		if (work) {
+		if (workWifiFound) {
 			if (at <= 0) // sono arrivato in ufficio
 				setArrival(st);
 			else if (lt > 0) // ero uscito ma sono rientrato (pranzo?)
 				setLeft(0);
-			// cancel the next forced scan, we don't need it anymore
+			// cancel the next forced scan
 			((AlarmManager) appContext.getSystemService(Context.ALARM_SERVICE)).cancel(mkPI(AC.CHECK));
 		} else if (at > 0 && lt <= 0) // sono uscito
 			setLeft(st);
+	}
+
+	private boolean isCharging() {
+		IntentFilter flt = new IntentFilter(Intent.ACTION_BATTERY_CHANGED);
+		Intent bsi = appContext.registerReceiver(null, flt);
+		int bsv = bsi.getIntExtra(BatteryManager.EXTRA_STATUS, -1);
+		return bsv == BatteryManager.BATTERY_STATUS_CHARGING || bsv == BatteryManager.BATTERY_STATUS_FULL;
 	}
 
 	private static PendingIntent mkPI(String action) {

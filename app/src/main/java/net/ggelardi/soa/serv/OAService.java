@@ -9,7 +9,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.BitmapFactory;
 import android.media.AudioAttributes;
-import android.media.AudioManager;
 import android.media.RingtoneManager;
 import android.net.Uri;
 import android.net.wifi.WifiManager;
@@ -22,7 +21,7 @@ import net.ggelardi.soa.SettingsActivity;
 public class OAService extends IntentService {
 	private static final String TAG = "OAService";
 
-	private static final int NOTIF_CH_ID = 2299;
+	private static final String NOTIF_CHANNEL = "SOA_NOTIFICATION_CHANNEL";
 	private static final int NOTIF_ID = 1199;
 	private static final Uri NOTIF_SOUND = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
 
@@ -51,23 +50,22 @@ public class OAService extends IntentService {
 		String act = intent != null ? intent.getAction() : "asd";
 		Log.v(TAG, act);
 		OASession session = OASession.getInstance(this);
-		boolean sound = false;
 		switch (act) {
 			case "android.intent.action.BOOT_COMPLETED":
 				session.setLastWiFiScan(null);
-				session.checkNetwork(false);
+				session.requestWifiScan(false);
 				break;
 			case "android.net.conn.CONNECTIVITY_CHANGE":
 			case "android.net.wifi.WIFI_STATE_CHANGED":
 			case "android.net.wifi.STATE_CHANGE":
-				session.checkNetwork(false);
+				session.requestWifiScan(false);
 				session.checkAlarms();
 				break;
 			case "android.net.wifi.SCAN_RESULTS":
 				session.setLastWiFiScan(((WifiManager) this.getSystemService(Context.WIFI_SERVICE)).getScanResults());
 				break;
 			case OASession.AC.CHECK:
-				session.checkNetwork(true);
+				session.requestWifiScan(true);
 				session.checkAlarms();
 				break;
 			case OASession.AC.ENTER:
@@ -75,7 +73,7 @@ public class OAService extends IntentService {
 			case OASession.AC.LEFTW:
 			case OASession.AC.BLUNC:
 			case OASession.AC.ELUNC:
-				sound = true;
+				// continue to update the notification
 				break;
 			default:
 				return;
@@ -86,6 +84,7 @@ public class OAService extends IntentService {
 			nm.cancelAll();
 			return;
 		}
+		//
 		long lt = session.getLeft();
 		long bt = session.getLunchBegin();
 		long et = session.getLunchEnd();
@@ -96,15 +95,27 @@ public class OAService extends IntentService {
 			nm.cancelAll();
 			return;
 		}
-		NotificationCompat.Builder nb = new NotificationCompat.Builder(this, "SOA_CH_ID");
+		//
+		if (nm.getNotificationChannel(NOTIF_CHANNEL) == null) {
+			AudioAttributes audioAttrs = new AudioAttributes.Builder()
+					.setUsage(AudioAttributes.USAGE_NOTIFICATION)
+					.setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+					.build();
+			NotificationChannel nc = new NotificationChannel(NOTIF_CHANNEL, "SOA Alarms",
+					NotificationManager.IMPORTANCE_HIGH);
+			nc.setDescription("All SOA notifications");
+			nc.setSound(NOTIF_SOUND, audioAttrs);
+			nc.setBypassDnd(true);
+			nm.createNotificationChannel(nc);
+		}
+		NotificationCompat.Builder nb = new NotificationCompat.Builder(this, NOTIF_CHANNEL);
 		nb.setCategory(NotificationCompat.CATEGORY_STATUS);
-		nb.setPriority(NotificationCompat.PRIORITY_HIGH);
+		//nb.setPriority(NotificationCompat.PRIORITY_HIGH);
 		nb.setVisibility(NotificationCompat.VISIBILITY_PUBLIC);
 		nb.setSmallIcon(R.drawable.ic_notif_small);
+		nb.setOnlyAlertOnce(true);
 		nb.setAutoCancel(false);
 		nb.setOngoing(true);
-		if (sound)
-			nb.setSound(NOTIF_SOUND, AudioAttributes.USAGE_ALARM);
 		lt = session.getLeaving();
 		if (atLunch) {
 			nb.setContentTitle(getString(R.string.notif_lunch_title));
